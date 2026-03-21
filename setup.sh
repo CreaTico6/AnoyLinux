@@ -396,18 +396,18 @@ create_on_script() {
 #!/bin/bash
 # Enable AnoyPC cron job
 
-# Get the current crontab and re-add AnoyPC job if missing
+# Canonical schedule
 CRON_JOB="*/6 * * * * $HOME/.anoypc/run.sh"
 
-# Check if job already exists
-if crontab -l 2>/dev/null | grep -q "/.anoypc/run.sh"; then
-    echo "✓ AnoyPC cron job is already enabled"
-else
-    # Add the job
-    (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
-    echo "✓ AnoyPC cron job enabled"
-    echo "  Pranks will execute every 6 minutes"
-fi
+# Rebuild crontab removing old/duplicate AnoyPC entries, then add canonical one
+TMP_CRON="$(mktemp)"
+crontab -l 2>/dev/null | grep -v "/.anoypc/run.sh" > "$TMP_CRON" || true
+echo "$CRON_JOB" >> "$TMP_CRON"
+crontab "$TMP_CRON"
+rm -f "$TMP_CRON"
+
+echo "✓ AnoyPC cron job enabled"
+echo "  Pranks will execute every 6 minutes"
 EOF
     
     chmod 755 "$ON_SCRIPT"
@@ -476,15 +476,16 @@ setup_cron() {
     print_header "Setting Up Cron Schedule"
     
     local CRON_JOB="*/6 * * * * $ANOYPC_DIR/run.sh"
-    
-    # Check if job already exists
-    if crontab -l 2>/dev/null | grep -q "/.anoypc/run.sh"; then
-        print_info "Cron job already exists"
-    else
-        # Add the job
-        (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
-        print_success "Cron job registered"
-    fi
+
+    # Rebuild crontab: remove old/duplicate entries and enforce canonical schedule
+    local TMP_CRON
+    TMP_CRON="$(mktemp)"
+    crontab -l 2>/dev/null | grep -v "/.anoypc/run.sh" > "$TMP_CRON" || true
+    echo "$CRON_JOB" >> "$TMP_CRON"
+    crontab "$TMP_CRON"
+    rm -f "$TMP_CRON"
+
+    print_success "Cron job registered/updated"
     
     echo "  Schedule: Every 6 minutes"
     echo "  Command: $CRON_JOB"
