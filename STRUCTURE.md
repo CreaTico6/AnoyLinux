@@ -74,7 +74,7 @@ make           # Compilar
 
 ```bash
 # Instalar tudo (cria diretorios, compila, configura cron)
-./setup.sh
+./install_and_start.sh
 ```
 
 O script fará:
@@ -83,10 +83,11 @@ O script fará:
 3. ✅ Compilar o programa
 4. ✅ Criar `~/.anoypc/`
 5. ✅ Criar todos os scripts de controle
-6. ✅ Ativar todas as 7 features
-7. ✅ Registar cron job (cada 5 minutos)
+6. ✅ Ativar todas as 9 features
+7. ✅ Registar cron job (cada 6 minutos)
 8. ✅ Criar symlinks em `~/.local/bin/`
 9. ✅ Criar log file
+10. ✅ Disparar 1 prank imediatamente
 
 ---
 
@@ -105,14 +106,16 @@ O script fará:
 │  ├─ get_home_dir()    - Detectar home directory
 │  └─ is_feature_enabled()  - Verificar marker files
 │
-├─ Feature Implementations (350+ linhas)
+├─ Feature Implementations (400+ linhas)
 │  ├─ feature_bell()      - Terminal bell
 │  ├─ feature_message()   - Random messages
-│  ├─ feature_mouse()     - Hide/show cursor
+│  ├─ feature_block_screen() - Overlay e bloqueio temporário
 │  ├─ feature_flash()     - Screen flash ANSI
 │  ├─ feature_reverse()   - Reverse video text
 │  ├─ feature_calendar()  - Calendar anomaly
-│  └─ feature_sysinfo()   - Fake system info
+│  ├─ feature_sysinfo()   - Fake system info
+│  ├─ feature_screen_rotate() - Rotação por 42s com revert
+│  └─ feature_keyboard_swap() - Swap layout por 42s com revert
 │
 ├─ Dispatcher (50 linhas)
 │  ├─ run_feature()       - Execute specific feature

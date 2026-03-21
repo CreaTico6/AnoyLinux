@@ -36,8 +36,8 @@ Foi criada com sucesso uma **versão completa em C puro** do AnoyingPC para Linu
 ✅ **ALERT_SCREEN** - Texto em modo reverse video com mensagens de erro  
 ✅ **CALENDAR** - Anomalia de data fake  
 ✅ **SYSINFO** - Relatório de sistema fake  
-✅ **SCREEN_ROTATE** - Rotaciona display 4 vezes, fica rotacionado (permanente)  
-✅ **KEYBOARD_SWAP** - Alterna layout teclado pt↔us (permanente)  
+✅ **SCREEN_ROTATE** - Rotaciona display por 42s e depois reverte ao normal  
+✅ **KEYBOARD_SWAP** - Alterna layout teclado pt↔us por 42s e depois reverte  
 
 ---
 
@@ -74,7 +74,7 @@ Foi criada com sucesso uma **versão completa em C puro** do AnoyingPC para Linu
 
 ```
 1. make               → Compila o binário C
-2. ./setup.sh        → Instala tudo automaticamente
+2. ./install_and_start.sh → Instala tudo automaticamente e inicia já
    ├─ Verifica gcc e make
    ├─ Compila novamente (para ter certeza)
    ├─ Cria ~/.anoypc/
@@ -82,6 +82,8 @@ Foi criada com sucesso uma **versão completa em C puro** do AnoyingPC para Linu
    ├─ Ativa todas as 9 features
    ├─ Registra cron job (*/6 minutos)
    ├─ Cria symlinks em ~/.local/bin/
+   ├─ Ativa scheduler
+   ├─ Dispara 1 prank imediatamente
    └─ Exibe sumário de instalação
 3. Pronto!           → Pranks começam em 6 minutos
 ```
@@ -257,7 +259,7 @@ tail -f ~/.anoypc/anoypc.log
 - Exemplos de uso
 
 ⚡ **Experiência Utilizador**
-- Instalação one-command: `./setup.sh`
+- Instalação one-command: `./install_and_start.sh`
 - Menus interativos simples
 - Logging completo para debugging
 - Symlinks para acesso rápido
@@ -284,7 +286,7 @@ Criado com ❤️ em março de 2026
 
 A versão Linux do AnoyingPC está **100% completa, testada e pronta para usar**!
 
-Todas as 7 features funcionam perfeitamente, o código é profissional e bem documentado, e a instalação é automática.
+Todas as 9 features funcionam perfeitamente, o código é profissional e bem documentado, e a instalação é automática.
 
 **Happy pranking! 🎭**
 

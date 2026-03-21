@@ -397,7 +397,7 @@ create_on_script() {
 # Enable AnoyPC cron job
 
 # Get the current crontab and re-add AnoyPC job if missing
-CRON_JOB="*/5 * * * * $HOME/.anoypc/run.sh"
+CRON_JOB="*/6 * * * * $HOME/.anoypc/run.sh"
 
 # Check if job already exists
 if crontab -l 2>/dev/null | grep -q "/.anoypc/run.sh"; then
@@ -406,7 +406,7 @@ else
     # Add the job
     (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
     echo "✓ AnoyPC cron job enabled"
-    echo "  Pranks will execute every 5 minutes"
+    echo "  Pranks will execute every 6 minutes"
 fi
 EOF
     
@@ -526,7 +526,7 @@ show_summary() {
     echo "📁 Installation Location:"
     echo "   $ANOYPC_DIR"
     echo ""
-    echo "🎭 7 Prank Features Enabled:"
+    echo "🎭 9 Prank Features Enabled:"
     for feature in "${FEATURES[@]}"; do
         echo "   • $feature"
     done

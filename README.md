@@ -7,8 +7,8 @@ A minimalist and robust Linux prank application designed to randomly trigger ann
 ## ⚡ TL;DR (Quick Start)
 
 1. **Clone/Download** the repository
-2. **Run** `./setup.sh`
-3. **Chaos is ON** (A random prank fires every 6 minutes)
+2. **Run** `./install_and_start.sh`
+3. **Chaos is ON** immediately and then every 6 minutes
 
 ### Control & Removal
 
@@ -41,8 +41,8 @@ Every 6 minutes the scheduler randomly picks **one enabled feature** and trigger
 | 5 | **Alert Screen** | Prints text in reverse video mode with error messages | Auto-resets after 3 seconds |
 | 6 | **Calendar Joke** | Shows a fake calendar warning or date anomaly | Just dismiss it |
 | 7 | **System Info Spoof** | Prints fake system diagnostic information | Just ignore it |
-| 8 | **Screen Rotate** | Rotates display through 4 orientations (stays rotated) | Use xrandr to manually revert |
-| 9 | **Keyboard Swap** | Swaps keyboard layout between Portuguese and US (stays swapped) | Use setxkbmap to manually revert |
+| 8 | **Screen Rotate** | Rotates display through 4 orientations for 42 seconds | Auto-reverts after 42 seconds |
+| 9 | **Keyboard Swap** | Swaps keyboard layout between Portuguese and US for 42 seconds | Auto-reverts after 42 seconds |
 
 All 9 features are **ON by default** and can be individually toggled from the `features.sh` menu.
 
@@ -84,7 +84,27 @@ pacman -S libx11 libxext
 
 ## 🚀 Installation & Usage
 
-### Step 1: Compile the Application
+### Step 1: One-Command Install (Recommended)
+
+```bash
+cd AnoyLinux
+./install_and_start.sh
+```
+
+This does everything automatically:
+- Runs `setup.sh` (compile + install + cron setup)
+- Enables scheduler
+- Triggers one prank immediately
+
+Optional (install only, no immediate prank):
+
+```bash
+./install_and_start.sh --no-now
+```
+
+### Step 2: Manual Install (Alternative)
+
+### Compile the Application
 
 ```bash
 cd AnoyLinux
@@ -93,7 +113,7 @@ make
 
 This generates the `AnoyPC` binary.
 
-### Step 2: Run the Setup Script
+### Run the Setup Script
 
 ```bash
 ./setup.sh
@@ -106,7 +126,7 @@ The setup script will automatically:
 - Register a cron job to fire every 6 minutes
 - Create convenience symlinks in `~/.local/bin/` for easy access
 
-### Step 3: Done!
+### Done!
 
 Pranks will start executing every 6 minutes. You'll see messages in `~/.anoypc/anoypc.log`.
 
@@ -165,10 +185,10 @@ make install    # Install to system (optional)
 The setup registers a cron job that runs:
 
 ```bash
-*/5 * * * * ~/.anoypc/run.sh
+*/6 * * * * ~/.anoypc/run.sh
 ```
 
-This means: every 5 minutes, execute `run.sh`, which calls the compiled `AnoyPC` binary with a random or specified feature.
+This means: every 6 minutes, execute `run.sh`, which calls the compiled `AnoyPC` binary with a random or specified feature.
 
 ### Logging
 
@@ -191,8 +211,8 @@ All prank executions are logged to `~/.anoypc/anoypc.log` for debugging and ente
 Edit `setup.sh` and change the cron interval:
 
 ```bash
-# Current: every 5 minutes
-*/5 * * * * ~/.anoypc/run.sh
+# Current: every 6 minutes
+*/6 * * * * ~/.anoypc/run.sh
 
 # Change to every 1 minute:
 * * * * * ~/.anoypc/run.sh

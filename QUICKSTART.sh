@@ -24,22 +24,31 @@ Fedora/RHEL/CentOS:
 Arch:
     pacman -S base-devel
 
-STEP 2: COMPILE
+STEP 2: ONE COMMAND INSTALL (RECOMMENDED)
+════════════════════════════════════════════════════════════════════
+
+    cd AnoyLinux
+    ./install_and_start.sh
+
+This will:
+    ✓ Compile and install everything
+    ✓ Create ~/.anoypc/ directory
+    ✓ Enable all 9 features
+    ✓ Setup cron job (every 6 minutes)
+    ✓ Start one prank immediately
+
+STEP 3: MANUAL INSTALL (ALTERNATIVE)
 ════════════════════════════════════════════════════════════════════
 
     cd AnoyLinux
     make
-
-STEP 3: INSTALL
-════════════════════════════════════════════════════════════════════
-
     ./setup.sh
 
 This will:
     ✓ Compile the program
     ✓ Create ~/.anoypc/ directory
-    ✓ Enable all 7 features
-    ✓ Setup cron job (every 5 minutes)
+    ✓ Enable all 9 features
+    ✓ Setup cron job (every 6 minutes)
     ✓ Create control scripts
 
 STEP 4: ENJOY!

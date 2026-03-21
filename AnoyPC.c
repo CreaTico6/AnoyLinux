@@ -5,7 +5,7 @@
  * 
  * A minimalist prank application that executes harmless-but-annoying
  * system disruptions on Linux. Features are toggled via marker files
- * and executed via a cron scheduler (every 5 minutes).
+ * and executed via a cron scheduler (every 6 minutes).
  * 
  * Compilation: gcc -o AnoyPC AnoyPC.c
  * Usage: ./AnoyPC [FEATURE_NAME]
