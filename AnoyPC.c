@@ -145,9 +145,9 @@ void feature_bell(void) {
     }
     
     /* Print fake system alert message */
-    printf("\n=== CRITICAL SYSTEM ALERT ===\n");
-    printf("Kernel panic detected in subsystem SCHEDULER_TIMEOUT\n");
-    printf("Recovery in progress... DO NOT POWER OFF\n");
+    printf("\n=== AUDIO SUBSYSTEM ALERT ===\n");
+    printf("High-priority notification stream detected on tty session.\n");
+    printf("Acknowledgement pending...\n");
     printf("=============================\n\n");
     fflush(stdout);
     
@@ -161,25 +161,28 @@ void feature_bell(void) {
 void feature_message(void) {
     /* Array of fake system messages */
     const char* messages[] = {
-        "ERROR: Memory access violation in kernel module 'something_weird.ko'",
-        "WARNING: GPU thermal threshold exceeded. Throttling performance by 85%.",
-        "CRITICAL: Disk write cache corrupted. Filesystem in read-only mode.",
-        "System update detected. Rebooting in 30 seconds... Just kidding!",
-        "Network adapter crash detected. All data packets lost.",
-        "WARNING: CPU frequency scaling failure. Running at minimum speed.",
-        "FATAL: Display driver encountered unrecoverable error. Falling back to VESA.",
-        "Alert: Unauthorized process spawned by PID 1. Lockdown activated.",
-        "BEWARE: Someone is attempting to read this message right now!",
-        "Congratulations! Your system just became sentient. Welcome to the matrix!"
+        "systemd[1]: Delayed job queue exceeded soft timing threshold.",
+        "kernel: ACPI warning: firmware responded with stale timestamp.",
+        "NetworkManager: DNS resolver switched to fallback profile.",
+        "udisksd: transient I/O latency spike detected on /dev/sda.",
+        "journald: log rate limit reached for user session scope.",
+        "pipewire: output stream underrun, auto-recovery in progress.",
+        "display-manager: monitor EDID checksum mismatch (temporary).",
+        "cron: skipped one cycle due to local clock drift correction.",
+        "dbus-daemon: service activation timeout reached, retry queued.",
+        "kernel: thermal zone briefly crossed passive cooling threshold."
     };
     
     int num_messages = sizeof(messages) / sizeof(messages[0]);
     int random_msg = rand() % num_messages;
     
+    char formatted[44];
+    snprintf(formatted, sizeof(formatted), "%-43.43s", messages[random_msg]);
+
     printf("\n┌─────────────────────────────────────────────┐\n");
-    printf("│ SYSTEM MESSAGE (Press CTRL+C to continue)  │\n");
+    printf("│ SYSTEM EVENT LOG                            │\n");
     printf("├─────────────────────────────────────────────┤\n");
-    printf("│ %s\n", messages[random_msg]);
+    printf("│ %s │\n", formatted);
     printf("└─────────────────────────────────────────────┘\n\n");
     fflush(stdout);
     
@@ -194,21 +197,23 @@ void feature_message(void) {
 void feature_mouse(void) {
     int action = rand() % 2;  /* 0=hide, 1=show */
     const char* action_name = (action == 0) ? "HIDING" : "SHOWING";
-    const char* cmd_hide = "which xdotool > /dev/null 2>&1 && xdotool mousemove 0 0 2>/dev/null || true";
-    const char* cmd_show = "which xdotool > /dev/null 2>&1 && xdotool mousemove 50%% 50%% 2>/dev/null || true";
+    const char* cmd_hide = "if command -v unclutter >/dev/null 2>&1; then unclutter --timeout 0 --jitter 0 --fork >/dev/null 2>&1; elif command -v xdotool >/dev/null 2>&1; then xdotool mousemove 9999 9999 >/dev/null 2>&1; fi";
+    const char* cmd_show = "pkill -x unclutter >/dev/null 2>&1 || true; if command -v xdotool >/dev/null 2>&1; then xdotool mousemove 50%% 50%% >/dev/null 2>&1; fi";
     
     printf("\n>>> Mouse cursor %s... <<<\n", action_name);
     fflush(stdout);
     
-    /* Attempt to hide/show mouse using xdotool */
+    /* Always affect terminal cursor, then attempt desktop cursor controls */
     if (action == 0) {
-        /* Hide mouse: xdotool mousemove to corner + fade out */
+        printf("\033[?25l");  /* Hide terminal cursor */
+        fflush(stdout);
         (void)system(cmd_hide);
-        printf(">>> Cursor moved to corner (X11 control attempted) <<<\n");
+        printf(">>> Cursor hidden (terminal + desktop attempt) <<<\n");
     } else {
-        /* Show mouse: move to center of screen */
+        printf("\033[?25h");  /* Show terminal cursor */
+        fflush(stdout);
         (void)system(cmd_show);
-        printf(">>> Cursor moved to center (X11 control attempted) <<<\n");
+        printf(">>> Cursor restored (terminal + desktop attempt) <<<\n");
     }
     
     printf("\n");
@@ -222,23 +227,34 @@ void feature_mouse(void) {
  * Creates a visual distraction effect
  */
 void feature_flash(void) {
+    int used_fullscreen = 0;
+
     printf("\n");
     fflush(stdout);
-    
-    /* Rapid color flashing using ANSI escape codes */
-    for (int i = 0; i < 10; i++) {
-        printf("\033[1;31m");  /* Bright red */
-        printf("█████████████████████████████████████\n");
-        fflush(stdout);
-        usleep(50000);  /* 50ms */
-        
-        printf("\033[1;33m");  /* Bright yellow */
-        printf("█████████████████████████████████████\n");
-        fflush(stdout);
-        usleep(50000);  /* 50ms */
+
+    /* Full-screen desktop flash attempt (no sudo required) */
+    if (getenv("DISPLAY") != NULL && system("command -v xrandr >/dev/null 2>&1") == 0) {
+        used_fullscreen = 1;
+        for (int i = 0; i < 6; i++) {
+            (void)system("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 0.20 >/dev/null 2>&1; done");
+            usleep(90000);
+            (void)system("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 1.00 >/dev/null 2>&1; done");
+            usleep(90000);
+        }
     }
-    
-    printf("\033[0m");  /* Reset to normal */
+
+    /* Fallback for TTY/terminals */
+    if (!used_fullscreen) {
+        printf("\033[2J\033[H");
+        for (int i = 0; i < 12; i++) {
+            printf("\033[41m████████████████████████████████████████████████████████████████\033[0m\n");
+            printf("\033[43m████████████████████████████████████████████████████████████████\033[0m\n");
+            fflush(stdout);
+            usleep(50000);
+        }
+    }
+
+    printf("\033[0m");
     printf("\n>>> Display refresh cycle complete <<<\n\n");
     fflush(stdout);
 }
@@ -249,19 +265,43 @@ void feature_flash(void) {
  * Creates an eerie "system error" appearance
  */
 void feature_reverse(void) {
-    /* ANSI escape sequence for reverse video: \033[7m */
-    printf("\033[7m");  /* Enable reverse video */
-    printf("                                        \n");
-    printf("  CRITICAL SYSTEM ERROR DETECTED!!      \n");
-    printf("  Unauthorized access attempt detected  \n");
-    printf("  Contact system administrator NOW      \n");
-    printf("                                        \n");
-    printf("\033[0m");  /* Disable reverse video */
-    
-    printf("\n>>> System restored to normal mode <<<\n\n");
+    int rows = 24;
+    int cols = 80;
+    const char* env_lines = getenv("LINES");
+    const char* env_cols = getenv("COLUMNS");
+
+    if (env_lines != NULL) {
+        int parsed = atoi(env_lines);
+        if (parsed >= 10 && parsed <= 120) {
+            rows = parsed;
+        }
+    }
+
+    if (env_cols != NULL) {
+        int parsed = atoi(env_cols);
+        if (parsed >= 40 && parsed <= 240) {
+            cols = parsed;
+        }
+    }
+
+    printf("\033[?1049h\033[2J\033[H\033[7m");
+    for (int row = 0; row < rows; row++) {
+        for (int col = 0; col < cols; col++) {
+            putchar(' ');
+        }
+        putchar('\n');
+    }
+
+    printf("\033[%d;%dHCRITICAL SYSTEM ERROR DETECTED", rows / 2 - 1, (cols / 2) - 14);
+    printf("\033[%d;%dHUNAUTHORIZED ACCESS ATTEMPT", rows / 2, (cols / 2) - 13);
+    printf("\033[%d;%dHPROTECTION MODE ENABLED", rows / 2 + 1, (cols / 2) - 11);
     fflush(stdout);
-    
-    sleep(3);  /* Keep reverse video for 3 seconds */
+
+    sleep(3);
+
+    printf("\033[0m\033[?1049l");
+    printf("\n>>> Reverse display cycle complete <<<\n\n");
+    fflush(stdout);
 }
 
 /*
@@ -277,17 +317,23 @@ void feature_calendar(void) {
     int fake_day = (timeinfo->tm_mday % 31) + 1;
     int fake_month = (timeinfo->tm_mon % 12) + 1;
     
-    printf("\n╔════════════════════════════════════╗\n");
-    printf("║  CALENDAR ANOMALY DETECTED!        ║\n");
-    printf("║  ──────────────────────────────────║\n");
-    printf("║  Current system date: %04d-%02d-%02d    ║\n",
-           timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
-    printf("║  Recorded date: %04d-%02d-%02d          ║\n",
-           timeinfo->tm_year + 1900, fake_month, fake_day);
-    printf("║                                    ║\n");
-    printf("║  WARNING: Temporal inconsistency! ║\n");
-    printf("║  Your system clock may be failing ║\n");
-    printf("╚════════════════════════════════════╝\n\n");
+        char current_date[64];
+        char recorded_date[64];
+
+        snprintf(current_date, sizeof(current_date), "Current system date: %04d-%02d-%02d",
+              timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
+        snprintf(recorded_date, sizeof(recorded_date), "Recorded date: %04d-%02d-%02d",
+              timeinfo->tm_year + 1900, fake_month, fake_day);
+
+        printf("\n╔════════════════════════════════════════════╗\n");
+        printf("║ CALENDAR ANOMALY DETECTED!                ║\n");
+        printf("║ ────────────────────────────────────────── ║\n");
+        printf("║ %-42s ║\n", current_date);
+        printf("║ %-42s ║\n", recorded_date);
+        printf("║                                            ║\n");
+        printf("║ WARNING: Temporal inconsistency detected!  ║\n");
+        printf("║ Your system clock may be unstable.         ║\n");
+        printf("╚════════════════════════════════════════════╝\n\n");
     fflush(stdout);
     
     sleep(3);
@@ -300,9 +346,9 @@ void feature_calendar(void) {
  */
 void feature_sysinfo(void) {
     printf("\n");
-    printf("╔═══════════════════════════════════════════╗\n");
-    printf("║         SYSTEM DIAGNOSTIC REPORT          ║\n");
-    printf("╚═══════════════════════════════════════════╝\n");
+    printf("╔══════════════════════════════════════════════════════════════╗\n");
+    printf("║ CRITICAL SYSTEM DIAGNOSTIC REPORT!                          ║\n");
+    printf("╚══════════════════════════════════════════════════════════════╝\n");
     printf("\n");
     printf("CPU Status:        WARNING - Throttled by 67%%\n");
     printf("RAM Usage:         CRITICAL - 94.2%% utilized\n");

@@ -6,10 +6,6 @@
 #					march 2026	#
 #-------------------------------#
 
-
-
-
-
 # AnoyingPC Linux - Makefile
 #
 # Targets:
