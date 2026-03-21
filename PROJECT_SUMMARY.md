@@ -12,30 +12,32 @@ Foi criada com sucesso uma **versão completa em C puro** do AnoyingPC para Linu
 
 | Ficheiro | Linhas | Descrição |
 |----------|--------|-----------|
-| **AnoyPC.c** | 650+ | Programa principal em C com 7 features completas |
+| **AnoyPC.c** | 608 | Programa principal em C com 9 features completas |
 | **Makefile** | 100+ | Sistema de compilação com múltiplos targets |
-| **setup.sh** | 450+ | Script de instalação automática (toda a configuração) |
-| **README.md** | 250+ | Documentação completa para utilizador final |
+| **setup.sh** | 590 | Script de instalação automática (toda a configuração) |
+| **README.md** | 305 | Documentação completa para utilizador final |
 | **STRUCTURE.md** | 300+ | Detalhes técnicos e guia de arquitetura |
 | **QUICKSTART.sh** | 80+ | Guia rápido de instalação |
 | **.gitignore** | 20+ | Configuração Git para ficheiros compilados |
 | **AnoyPC** | - | Binário compilado (executável) |
 
-**Total: ~2000 linhas de código + documentação** 🚀
+**Total: ~2500 linhas de código + documentação** 🚀
 
 ---
 
 ## 🎯 Funcionalidades Implementadas
 
-### 7 Pranks Diferentes
+### 9 Pranks Diferentes
 
-✅ **BELL** - Terminal bell com mensagem fake  
+✅ **BELL** - Terminal bell com mensagem fake + volume maximize + phone-incoming-call.oga  
 ✅ **MESSAGE** - Mensagens aleatórias assustadoras  
-✅ **MOUSE** - Hide/show cursor com xdotool  
-✅ **FLASH** - Flash de cores no terminal (ANSI)  
-✅ **REVERSE** - Texto em modo reverse video  
+✅ **BLOCK_SCREEN** - Overlay preto com instruções (42s timeout, exit com *)  
+✅ **FLASH** - Flash de cores no terminal (6 segundos, 30 ciclos)  
+✅ **ALERT_SCREEN** - Texto em modo reverse video com mensagens de erro  
 ✅ **CALENDAR** - Anomalia de data fake  
 ✅ **SYSINFO** - Relatório de sistema fake  
+✅ **SCREEN_ROTATE** - Rotaciona display 4 vezes, fica rotacionado (permanente)  
+✅ **KEYBOARD_SWAP** - Alterna layout teclado pt↔us (permanente)  
 
 ---
 
@@ -52,7 +54,7 @@ Foi criada com sucesso uma **versão completa em C puro** do AnoyingPC para Linu
 ### Sistema de Controle
 
 - ✅ **Marker Files** - Sistema simples de on/off (feat_*.on)
-- ✅ **Cron Scheduling** - Executa a cada 5 minutos
+- ✅ **Cron Scheduling** - Executa a cada 6 minutos
 - ✅ **Logging Completo** - Todas as ações registadas
 - ✅ **Menu Interativo** - features.sh para gerenciar tudo
 - ✅ **Teste Imediato** - test.sh para testar pranks
@@ -77,11 +79,11 @@ Foi criada com sucesso uma **versão completa em C puro** do AnoyingPC para Linu
    ├─ Compila novamente (para ter certeza)
    ├─ Cria ~/.anoypc/
    ├─ Copia scripts e binário
-   ├─ Ativa todas as 7 features
-   ├─ Registra cron job (*/5 minutos)
+   ├─ Ativa todas as 9 features
+   ├─ Registra cron job (*/6 minutos)
    ├─ Cria symlinks em ~/.local/bin/
    └─ Exibe sumário de instalação
-3. Pronto!           → Pranks começam em 5 minutos
+3. Pronto!           → Pranks começam em 6 minutos
 ```
 
 ---

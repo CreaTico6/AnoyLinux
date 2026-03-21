@@ -13,7 +13,7 @@
 #   3. Creates ~/.anoypc directory structure
 #   4. Copies compiled binary and control scripts
 #   5. Enables all features by default (creates marker files)
-#   6. Registers a cron job for scheduling (every 5 minutes)
+#   6. Registers a cron job for scheduling (every 6 minutes)
 #   7. Creates convenient symlinks in ~/.local/bin/
 #   8. Sets up logging
 #
@@ -41,7 +41,7 @@ BINARY_NAME="AnoyPC"
 BINARY_PATH="$SCRIPT_DIR/$BINARY_NAME"
 
 # Feature names (must match enum in AnoyPC.c)
-FEATURES=("BELL" "MESSAGE" "MOUSE" "FLASH" "REVERSE" "CALENDAR" "SYSINFO")
+FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "SCREEN_ROTATE" "KEYBOARD_SWAP")
 
 # ==============================================================================
 # UTILITY FUNCTIONS
@@ -238,7 +238,7 @@ create_features_script() {
 ANOYPC_DIR="$HOME/.anoypc"
 
 # Feature names
-FEATURES=("BELL" "MESSAGE" "MOUSE" "FLASH" "REVERSE" "CALENDAR" "SYSINFO")
+FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "SCREEN_ROTATE" "KEYBOARD_SWAP")
 
 # Function to show feature status
 show_status() {
@@ -290,12 +290,14 @@ while true; do
     case $choice in
         1) toggle_feature "BELL" ;;
         2) toggle_feature "MESSAGE" ;;
-        3) toggle_feature "MOUSE" ;;
+        3) toggle_feature "BLOCK_SCREEN" ;;
         4) toggle_feature "FLASH" ;;
-        5) toggle_feature "REVERSE" ;;
+        5) toggle_feature "ALERT_SCREEN" ;;
         6) toggle_feature "CALENDAR" ;;
         7) toggle_feature "SYSINFO" ;;
-        8) 
+        8) toggle_feature "SCREEN_ROTATE" ;;
+        9) toggle_feature "KEYBOARD_SWAP" ;;
+        10) 
             echo "Enabling all features..."
             for feature in "${FEATURES[@]}"; do
                 touch "$ANOYPC_DIR/feat_$feature.on"
@@ -303,7 +305,7 @@ while true; do
             echo "✓ All features enabled"
             sleep 1
             ;;
-        9)
+        11)
             echo "Disabling all features..."
             for feature in "${FEATURES[@]}"; do
                 rm -f "$ANOYPC_DIR/feat_$feature.on"
@@ -311,7 +313,7 @@ while true; do
             echo "✓ All features disabled"
             sleep 1
             ;;
-        10|q|Q)
+        12|q|Q)
             exit 0
             ;;
         *)
@@ -347,24 +349,28 @@ while true; do
     echo ""
     echo "  1. Terminal Bell"
     echo "  2. Random Message"
-    echo "  3. Mouse Hide/Show"
+    echo "  3. Block Screen"
     echo "  4. Screen Flash"
-    echo "  5. Reverse Video"
+    echo "  5. Alert Screen"
     echo "  6. Calendar Joke"
     echo "  7. System Info Spoof"
-    echo "  8. Exit"
+    echo "  8. Screen Rotate (42s)"
+    echo "  9. Keyboard Swap (42s)"
+    echo "  10. Exit"
     echo ""
-    read -p "Choose (1-8): " choice
+    read -p "Choose (1-10): " choice
     
     case $choice in
         1) echo "Running BELL prank..."; "$ANOYPC_DIR/AnoyPC" BELL ;;
         2) echo "Running MESSAGE prank..."; "$ANOYPC_DIR/AnoyPC" MESSAGE ;;
-        3) echo "Running MOUSE prank..."; "$ANOYPC_DIR/AnoyPC" MOUSE ;;
+        3) echo "Running BLOCK_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" BLOCK_SCREEN ;;
         4) echo "Running FLASH prank..."; "$ANOYPC_DIR/AnoyPC" FLASH ;;
-        5) echo "Running REVERSE prank..."; "$ANOYPC_DIR/AnoyPC" REVERSE ;;
+        5) echo "Running ALERT_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" ALERT_SCREEN ;;
         6) echo "Running CALENDAR prank..."; "$ANOYPC_DIR/AnoyPC" CALENDAR ;;
         7) echo "Running SYSINFO prank..."; "$ANOYPC_DIR/AnoyPC" SYSINFO ;;
-        8|q|Q)
+        8) echo "Running SCREEN_ROTATE prank (42s)..."; "$ANOYPC_DIR/AnoyPC" SCREEN_ROTATE ;;
+        9) echo "Running KEYBOARD_SWAP prank (42s)..."; "$ANOYPC_DIR/AnoyPC" KEYBOARD_SWAP ;;
+        10|q|Q)
             exit 0
             ;;
         *)
@@ -469,7 +475,7 @@ EOF
 setup_cron() {
     print_header "Setting Up Cron Schedule"
     
-    local CRON_JOB="*/5 * * * * $ANOYPC_DIR/run.sh"
+    local CRON_JOB="*/6 * * * * $ANOYPC_DIR/run.sh"
     
     # Check if job already exists
     if crontab -l 2>/dev/null | grep -q "/.anoypc/run.sh"; then
@@ -480,7 +486,7 @@ setup_cron() {
         print_success "Cron job registered"
     fi
     
-    echo "  Schedule: Every 5 minutes"
+    echo "  Schedule: Every 6 minutes"
     echo "  Command: $CRON_JOB"
 }
 
@@ -539,7 +545,7 @@ show_summary() {
     echo "📝 Logging:"
     echo "   • $ANOYPC_DIR/anoypc.log"
     echo ""
-    echo "⏰ Schedule: Every 5 minutes (via cron)"
+    echo "⏰ Schedule: Every 6 minutes (via cron)"
     echo ""
     echo "💡 Quick Start:"
     echo "   • View pranks in action: ~/.anoypc/test.sh"

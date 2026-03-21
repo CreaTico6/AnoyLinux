@@ -12,7 +12,7 @@
  *   - If FEATURE_NAME is omitted, a random enabled feature is selected
  *   - If FEATURE_NAME is provided, that specific feature is executed
  * 
- * Author: CreaTico6 (Linux Edition)
+ * Author: CreaTico6@gmail.com (Linux Edition)
  * Date: March 2026
  */
 
@@ -28,6 +28,9 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/time.h>  /* For usleep */
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/keysym.h>
 
 /* ==============================================================================
  * FEATURE DEFINITIONS - Define all available prank features here
@@ -37,11 +40,13 @@
 typedef enum {
     FEAT_BELL,        /* 1. Terminal Bell - Emits loud beep */
     FEAT_MESSAGE,     /* 2. Random Message - Prints fake system message */
-    FEAT_MOUSE,       /* 3. Mouse Hide/Show - Toggles mouse cursor visibility */
+    FEAT_BLOCK_SCREEN,/* 3. Block Screen - Full-screen black overlay */
     FEAT_FLASH,       /* 4. Screen Flash - Flashes terminal with colors */
-    FEAT_REVERSE,     /* 5. Reverse Video - Prints text in reverse mode */
+    FEAT_REVERSE,     /* 5. Alert Screen - Reverse video warning screen */
     FEAT_CALENDAR,    /* 6. Calendar Joke - Shows fake date warning */
     FEAT_SYSINFO,     /* 7. System Info Spoof - Prints fake system info */
+    FEAT_SCREEN_ROTATE, /* 8. Screen Rotate - Rotates display for 6 seconds */
+    FEAT_KEYBOARD_SWAP, /* 9. Keyboard Swap - Changes keyboard layout */
     FEAT_COUNT        /* Total number of features (used for random selection) */
 } Feature;
 
@@ -49,11 +54,13 @@ typedef enum {
 static const char* FEATURE_NAMES[] = {
     "BELL",
     "MESSAGE",
-    "MOUSE",
+    "BLOCK_SCREEN",
     "FLASH",
-    "REVERSE",
+    "ALERT_SCREEN",
     "CALENDAR",
-    "SYSINFO"
+    "SYSINFO",
+    "SCREEN_ROTATE",
+    "KEYBOARD_SWAP"
 };
 
 /* ==============================================================================
@@ -120,9 +127,17 @@ const char* get_home_dir(void) {
  */
 int is_feature_enabled(const char* homedir, const char* feature_name) {
     char filepath[512];
+    char legacy_filepath[512];
     
     /* Construct path: ~/.anoypc/feat_FEATURENAME.on */
     snprintf(filepath, sizeof(filepath), "%s/.anoypc/feat_%s.on", homedir, feature_name);
+
+    if (strcmp(feature_name, "ALERT_SCREEN") == 0) {
+        snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/.anoypc/feat_REVERSE.on", homedir);
+        if (access(legacy_filepath, F_OK) == 0) {
+            return 1;
+        }
+    }
     
     /* Check if file exists (accessible with read permission) */
     return access(filepath, F_OK) == 0;
@@ -137,10 +152,19 @@ int is_feature_enabled(const char* homedir, const char* feature_name) {
  * Emits a loud terminal bell sound and prints a fake system alert
  */
 void feature_bell(void) {
+    /* Maximize volume before playing sound */
+    const char* cmd_volume = "if command -v pactl >/dev/null 2>&1; then pactl set-sink-volume @DEFAULT_SINK@ 150% >/dev/null 2>&1; fi";
+    
+    const char* cmd_sound = "if command -v paplay >/dev/null 2>&1 && [ -f /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga ]; then paplay /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga >/dev/null 2>&1; elif command -v tput >/dev/null 2>&1; then tput bel >/dev/null 2>&1; else printf '\\a'; fi";
+
+    /* Set volume to maximum once */
+    (void)system(cmd_volume);
+    
     /* Ring the bell 5 times for maximum annoyance */
     for (int i = 0; i < 5; i++) {
         printf("\a");  /* ASCII BEL character (0x07) */
         fflush(stdout);
+        (void)system(cmd_sound);
         usleep(100000);  /* 100ms delay between beeps */
     }
     
@@ -186,39 +210,119 @@ void feature_message(void) {
     printf("└─────────────────────────────────────────────┘\n\n");
     fflush(stdout);
     
-    sleep(3);  /* Display message for 3 seconds */
+    sleep(30);  /* Display message for 30 seconds */
 }
 
 /*
- * FEATURE 3: Mouse Hide/Show
- * Attempts to hide or show mouse cursor using xdotool or X11 commands
- * Falls back gracefully if X11 is not available
+ * FEATURE 3: Block Screen
+ * Displays a full-screen black overlay with instructions.
+ * Exit only with '*' key or timeout (42 seconds).
  */
-void feature_mouse(void) {
-    int action = rand() % 2;  /* 0=hide, 1=show */
-    const char* action_name = (action == 0) ? "HIDING" : "SHOWING";
-    const char* cmd_hide = "if command -v unclutter >/dev/null 2>&1; then unclutter --timeout 0 --jitter 0 --fork >/dev/null 2>&1; elif command -v xdotool >/dev/null 2>&1; then xdotool mousemove 9999 9999 >/dev/null 2>&1; fi";
-    const char* cmd_show = "pkill -x unclutter >/dev/null 2>&1 || true; if command -v xdotool >/dev/null 2>&1; then xdotool mousemove 50%% 50%% >/dev/null 2>&1; fi";
-    
-    printf("\n>>> Mouse cursor %s... <<<\n", action_name);
-    fflush(stdout);
-    
-    /* Always affect terminal cursor, then attempt desktop cursor controls */
-    if (action == 0) {
-        printf("\033[?25l");  /* Hide terminal cursor */
+void feature_block_screen(void) {
+    Display* display;
+    int screen;
+    int sw;
+    int sh;
+    Window window;
+    XSetWindowAttributes attr;
+    Pixmap blank_pixmap;
+    Cursor blank_cursor;
+    XColor dummy;
+    GC gc;
+    time_t started_at;
+    const int timeout_seconds = 42;
+    struct timespec tick = {0, 100000000};
+    const char* line1 = "The answer for everything, is also the way to exit this screen. (only one char).";
+    char line2[160];
+
+    display = XOpenDisplay(NULL);
+    if (!display) {
+        printf("\n[BLOCK_SCREEN] X11 display unavailable.\n\n");
         fflush(stdout);
-        (void)system(cmd_hide);
-        printf(">>> Cursor hidden (terminal + desktop attempt) <<<\n");
-    } else {
-        printf("\033[?25h");  /* Show terminal cursor */
-        fflush(stdout);
-        (void)system(cmd_show);
-        printf(">>> Cursor restored (terminal + desktop attempt) <<<\n");
+        sleep(2);
+        return;
     }
-    
-    printf("\n");
-    fflush(stdout);
-    sleep(2);
+
+    screen = DefaultScreen(display);
+    sw = DisplayWidth(display, screen);
+    sh = DisplayHeight(display, screen);
+
+    attr.override_redirect = True;
+    attr.background_pixel = BlackPixel(display, screen);
+
+    window = XCreateWindow(display, RootWindow(display, screen),
+                           0, 0, (unsigned int)sw, (unsigned int)sh,
+                           0, CopyFromParent, InputOutput, CopyFromParent,
+                           CWOverrideRedirect | CWBackPixel, &attr);
+
+    XMapRaised(display, window);
+    XSelectInput(display, window, KeyPressMask | ExposureMask);
+    XSetInputFocus(display, window, RevertToParent, CurrentTime);
+    XFlush(display);
+
+    blank_pixmap = XCreatePixmap(display, window, 1, 1, 1);
+    blank_cursor = XCreatePixmapCursor(display, blank_pixmap, blank_pixmap,
+                                       &dummy, &dummy, 0, 0);
+    XDefineCursor(display, window, blank_cursor);
+    XGrabPointer(display, window, False,
+                 ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+                 GrabModeAsync, GrabModeAsync,
+                 None, blank_cursor, CurrentTime);
+    XGrabKeyboard(display, window, True,
+                  GrabModeAsync, GrabModeAsync, CurrentTime);
+    XFreeCursor(display, blank_cursor);
+    XFreePixmap(display, blank_pixmap);
+
+    gc = XCreateGC(display, window, 0, NULL);
+    XSetForeground(display, gc, WhitePixel(display, screen));
+
+    started_at = time(NULL);
+    while (1) {
+        time_t now = time(NULL);
+        int elapsed = (int)(now - started_at);
+        int remaining = timeout_seconds - elapsed;
+
+        if (remaining <= 0) {
+            break;
+        }
+
+        XClearWindow(display, window);
+        XSetForeground(display, gc, WhitePixel(display, screen));
+        XDrawString(display, window, gc, 40, (sh / 2) - 20, line1, (int)strlen(line1));
+        snprintf(line2, sizeof(line2), "Anyway if you cannot figure it out, this screen will exit in %d", remaining);
+        XDrawString(display, window, gc, 40, (sh / 2) + 10, line2, (int)strlen(line2));
+        XFlush(display);
+
+        while (XPending(display) > 0) {
+            XEvent event;
+            XNextEvent(display, &event);
+            if (event.type == KeyPress) {
+                char buffer[8] = {0};
+                KeySym keysym = 0;
+                int count = XLookupString(&event.xkey, buffer, sizeof(buffer), &keysym, NULL);
+                if (keysym == XK_KP_Multiply || keysym == XK_asterisk || (count > 0 && buffer[0] == '*')) {
+                    XFreeGC(display, gc);
+                    XUngrabKeyboard(display, CurrentTime);
+                    XUngrabPointer(display, CurrentTime);
+                    XUndefineCursor(display, window);
+                    XDestroyWindow(display, window);
+                    XFlush(display);
+                    XCloseDisplay(display);
+                    return;
+                }
+            }
+        }
+
+        nanosleep(&tick, NULL);
+    }
+
+    XFreeGC(display, gc);
+    XUngrabKeyboard(display, CurrentTime);
+    XUngrabPointer(display, CurrentTime);
+    XUndefineCursor(display, window);
+    XDestroyWindow(display, window);
+    XFlush(display);
+    XCloseDisplay(display);
 }
 
 /*
@@ -228,29 +332,34 @@ void feature_mouse(void) {
  */
 void feature_flash(void) {
     int used_fullscreen = 0;
+    const char* cmd_flash_tk = "python3 -c \"import tkinter as t,time; r=t.Tk(); r.attributes('-fullscreen',True); r.attributes('-topmost',True); r.configure(bg='black'); r.update(); [(r.configure(bg=c), r.update(), time.sleep(0.20)) for c in (['white','black']*15)]; r.destroy()\" >/dev/null 2>&1";
 
     printf("\n");
     fflush(stdout);
 
     /* Full-screen desktop flash attempt (no sudo required) */
-    if (getenv("DISPLAY") != NULL && system("command -v xrandr >/dev/null 2>&1") == 0) {
+    if (getenv("DISPLAY") != NULL && system(cmd_flash_tk) == 0) {
         used_fullscreen = 1;
-        for (int i = 0; i < 6; i++) {
+    }
+
+    if (!used_fullscreen && getenv("DISPLAY") != NULL && system("command -v xrandr >/dev/null 2>&1") == 0) {
+        used_fullscreen = 1;
+        for (int i = 0; i < 15; i++) {
             (void)system("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 0.20 >/dev/null 2>&1; done");
-            usleep(90000);
+            usleep(200000);
             (void)system("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 1.00 >/dev/null 2>&1; done");
-            usleep(90000);
+            usleep(200000);
         }
     }
 
     /* Fallback for TTY/terminals */
     if (!used_fullscreen) {
         printf("\033[2J\033[H");
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < 30; i++) {
             printf("\033[41m████████████████████████████████████████████████████████████████\033[0m\n");
             printf("\033[43m████████████████████████████████████████████████████████████████\033[0m\n");
             fflush(stdout);
-            usleep(50000);
+            usleep(200000);
         }
     }
 
@@ -260,7 +369,7 @@ void feature_flash(void) {
 }
 
 /*
- * FEATURE 5: Reverse Video Text
+ * FEATURE 5: Alert Screen
  * Prints text in reverse video mode (white text on black background)
  * Creates an eerie "system error" appearance
  */
@@ -297,10 +406,10 @@ void feature_reverse(void) {
     printf("\033[%d;%dHPROTECTION MODE ENABLED", rows / 2 + 1, (cols / 2) - 11);
     fflush(stdout);
 
-    sleep(3);
+    sleep(6);
 
     printf("\033[0m\033[?1049l");
-    printf("\n>>> Reverse display cycle complete <<<\n\n");
+    printf("\n>>> Alert screen cycle complete <<<\n\n");
     fflush(stdout);
 }
 
@@ -321,13 +430,13 @@ void feature_calendar(void) {
         char recorded_date[64];
 
         snprintf(current_date, sizeof(current_date), "Current system date: %04d-%02d-%02d",
-              timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
+               timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
         snprintf(recorded_date, sizeof(recorded_date), "Recorded date: %04d-%02d-%02d",
-              timeinfo->tm_year + 1900, fake_month, fake_day);
+               timeinfo->tm_year + 1900, fake_month, fake_day);
 
         printf("\n╔════════════════════════════════════════════╗\n");
-        printf("║ CALENDAR ANOMALY DETECTED!                ║\n");
-        printf("║ ────────────────────────────────────────── ║\n");
+        printf("║ CALENDAR ANOMALY DETECTED!                 ║\n");
+        printf("║ ------------------------------------------ ║\n");
         printf("║ %-42s ║\n", current_date);
         printf("║ %-42s ║\n", recorded_date);
         printf("║                                            ║\n");
@@ -365,6 +474,102 @@ void feature_sysinfo(void) {
     sleep(3);
 }
 
+/*
+ * FEATURE 8: Screen Rotate
+ * Rotates the display using xrandr for 42 seconds, then reverts to normal
+ * Cycles through rotation angles over 6 seconds, then waits, then reverts
+ */
+void feature_screen_rotate(void) {
+    printf("\n>>> Display rotation initiated (42s, then reverts) <<<\n");
+    fflush(stdout);
+    
+    if (getenv("DISPLAY") == NULL) {
+        printf(">>> No X11 display found <<<\n\n");
+        fflush(stdout);
+        sleep(1);
+        return;
+    }
+    
+    /* Rotate through different angles: 0 → 90 → 180 → 270, each ~1.5s */
+    const char* rotations[] = {"normal", "left", "inverted", "right"};
+    
+    for (int i = 0; i < 4; i++) {
+        char cmd[256];
+        snprintf(cmd, sizeof(cmd), 
+                 "for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate %s >/dev/null 2>&1; done",
+                 rotations[i]);
+        (void)system(cmd);
+        printf("  Step %d/4: Rotated to %s\n", i + 1, rotations[i]);
+        fflush(stdout);
+        usleep(1500000);  /* 1.5 seconds per rotation */
+    }
+    
+    printf("\n  Display will revert in 36 seconds...\n");
+    fflush(stdout);
+    sleep(36);  /* Wait for remaining time (6s rotation + 36s wait = 42s total) */
+    
+    /* Revert to normal rotation */
+    (void)system("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate normal >/dev/null 2>&1; done");
+    printf("\n>>> Display reverted to normal <<<\n\n");
+    fflush(stdout);
+}
+
+/*
+ * FEATURE 9: Keyboard Swap
+ * Swaps keyboard layout using setxkbmap for 42 seconds, then reverts to original
+ */
+void feature_keyboard_swap(void) {
+    printf("\n>>> Keyboard layout swap initiated (42s, then reverts) <<<\n");
+    fflush(stdout);
+    
+    if (system("command -v setxkbmap >/dev/null 2>&1") != 0) {
+        printf(">>> setxkbmap not found <<<\n\n");
+        fflush(stdout);
+        sleep(1);
+        return;
+    }
+    
+    /* Get current keyboard layout and determine swap target */
+    FILE* pipe = popen("setxkbmap -query | grep layout | awk '{print $2}'", "r");
+    char current_layout[64] = "us";
+    char target_layout[64] = "pt";
+    
+    if (pipe != NULL) {
+        if (fgets(current_layout, sizeof(current_layout), pipe) != NULL) {
+            /* Remove newline */
+            current_layout[strcspn(current_layout, "\n")] = '\0';
+            
+            /* Determine swap: if pt, go to us; otherwise go to pt */
+            if (strncmp(current_layout, "pt", 2) == 0) {
+                snprintf(target_layout, sizeof(target_layout), "us");
+            } else {
+                snprintf(target_layout, sizeof(target_layout), "pt");
+            }
+        }
+        pclose(pipe);
+    }
+    
+    printf("  Current layout: %s\n", current_layout);
+    printf("  Swapping to: %s for 42 seconds\n", target_layout);
+    fflush(stdout);
+    
+    /* Apply the new layout */
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "setxkbmap %s >/dev/null 2>&1", target_layout);
+    (void)system(cmd);
+    
+    sleep(2);
+    printf("\n  Keyboard swapped. Reverting in 40 seconds...\n");
+    fflush(stdout);
+    sleep(40);  /* Wait for remaining time (2s message + 40s wait = 42s total) */
+    
+    /* Revert to original layout */
+    snprintf(cmd, sizeof(cmd), "setxkbmap %s >/dev/null 2>&1", current_layout);
+    (void)system(cmd);
+    printf("\n>>> Keyboard layout reverted to %s <<<\n\n", current_layout);
+    fflush(stdout);
+}
+
 /* ==============================================================================
  * MAIN FEATURE EXECUTION DISPATCHER
  * ============================================================================*/
@@ -390,16 +595,20 @@ void run_feature(const char* feature_name) {
         feature_bell();
     } else if (strcmp(upper_name, "MESSAGE") == 0) {
         feature_message();
-    } else if (strcmp(upper_name, "MOUSE") == 0) {
-        feature_mouse();
+    } else if (strcmp(upper_name, "BLOCK_SCREEN") == 0 || strcmp(upper_name, "MOUSE") == 0) {
+        feature_block_screen();
     } else if (strcmp(upper_name, "FLASH") == 0) {
         feature_flash();
-    } else if (strcmp(upper_name, "REVERSE") == 0) {
+    } else if (strcmp(upper_name, "ALERT_SCREEN") == 0 || strcmp(upper_name, "REVERSE") == 0) {
         feature_reverse();
     } else if (strcmp(upper_name, "CALENDAR") == 0) {
         feature_calendar();
     } else if (strcmp(upper_name, "SYSINFO") == 0) {
         feature_sysinfo();
+    } else if (strcmp(upper_name, "SCREEN_ROTATE") == 0) {
+        feature_screen_rotate();
+    } else if (strcmp(upper_name, "KEYBOARD_SWAP") == 0) {
+        feature_keyboard_swap();
     } else {
         fprintf(stderr, "ERROR: Unknown feature '%s'\n", feature_name);
         exit(1);

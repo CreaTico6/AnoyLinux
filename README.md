@@ -8,7 +8,7 @@ A minimalist and robust Linux prank application designed to randomly trigger ann
 
 1. **Clone/Download** the repository
 2. **Run** `./setup.sh`
-3. **Chaos is ON** (A random prank fires every 5 minutes)
+3. **Chaos is ON** (A random prank fires every 6 minutes)
 
 ### Control & Removal
 
@@ -30,19 +30,21 @@ This is a **prank application** intended strictly for entertainment purposes. Al
 
 ## ✨ Features
 
-Every 5 minutes the scheduler randomly picks **one enabled feature** and triggers it. Each feature shows a message or performs a harmless action.
+Every 6 minutes the scheduler randomly picks **one enabled feature** and triggers it. Each feature shows a message or performs a harmless action.
 
 | # | Feature | What it does | How to undo |
 |---|---------|-------------|------------|
 | 1 | **Terminal Bell** | Emits a loud beep sound, prints a fake "system alert" to terminal | Just endure it or mute |
 | 2 | **Random Message** | Prints random funny/scary fake system messages | Just read it |
-| 3 | **Mouse Pointer Hide/Show** | Hides or shows the mouse cursor (if X11 is available) | Move the mouse or press ESC |
-| 4 | **Screen Flash** | Flashes the terminal or X11 display with colors | Wait a moment |
-| 5 | **Reverse Video Text** | Prints text in reverse video mode (white on black) | Auto-resets after 3 seconds |
+| 3 | **Block Screen** | Displays a black overlay with instructions, blocks input for 42 seconds | Press * key or wait |
+| 4 | **Screen Flash** | Flashes the terminal or X11 display with colors (6 seconds) | Wait a moment |
+| 5 | **Alert Screen** | Prints text in reverse video mode with error messages | Auto-resets after 3 seconds |
 | 6 | **Calendar Joke** | Shows a fake calendar warning or date anomaly | Just dismiss it |
 | 7 | **System Info Spoof** | Prints fake system diagnostic information | Just ignore it |
+| 8 | **Screen Rotate** | Rotates display through 4 orientations (stays rotated) | Use xrandr to manually revert |
+| 9 | **Keyboard Swap** | Swaps keyboard layout between Portuguese and US (stays swapped) | Use setxkbmap to manually revert |
 
-All 7 features are **ON by default** and can be individually toggled from the `features.sh` menu.
+All 9 features are **ON by default** and can be individually toggled from the `features.sh` menu.
 
 ---
 
@@ -100,13 +102,13 @@ This generates the `AnoyPC` binary.
 The setup script will automatically:
 - Create `~/.anoypc/` directory with all necessary files
 - Copy the compiled `AnoyPC` binary
-- Enable all 7 prank features (via marker files)
-- Register a cron job to fire every 5 minutes
+- Enable all 9 prank features (via marker files)
+- Register a cron job to fire every 6 minutes
 - Create convenience symlinks in `~/.local/bin/` for easy access
 
 ### Step 3: Done!
 
-Pranks will start executing every 5 minutes. You'll see messages in `~/.anoypc/anoypc.log`.
+Pranks will start executing every 6 minutes. You'll see messages in `~/.anoypc/anoypc.log`.
 
 ---
 

@@ -22,7 +22,7 @@
 # Compiler and flags
 CC = cc
 CFLAGS = -std=c99 -O2 -Wall -Wextra -Wpedantic # flag -02 - fica mais rápido
-LDFLAGS = 
+LDFLAGS = -lX11
 
 # Source and output files
 PROGRAM = AnoyPC
