@@ -114,7 +114,7 @@ O script fará:
 │  ├─ feature_reverse()   - Reverse video text
 │  ├─ feature_calendar()  - Calendar anomaly
 │  ├─ feature_sysinfo()   - Fake system info
-│  ├─ feature_screen_rotate() - Rotação por 42s com revert
+│  ├─ feature_upside_down() - Inversão por 42s com revert
 │  └─ feature_keyboard_swap() - Swap layout por 42s com revert
 │
 ├─ Dispatcher (50 linhas)

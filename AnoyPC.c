@@ -31,6 +31,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 
 /* ==============================================================================
  * FEATURE DEFINITIONS - Define all available prank features here
@@ -45,8 +46,8 @@ typedef enum {
     FEAT_REVERSE,     /* 5. Alert Screen - Reverse video warning screen */
     FEAT_CALENDAR,    /* 6. Calendar Joke - Shows fake date warning */
     FEAT_SYSINFO,     /* 7. System Info Spoof - Prints fake system info */
-    FEAT_SCREEN_ROTATE, /* 8. Screen Rotate - Rotates display for 6 seconds */
-    FEAT_KEYBOARD_SWAP, /* 9. Keyboard Swap - Changes keyboard layout */
+    FEAT_UPSIDE_DOWN,   /* 8. UPSIDE_DOWN - Inverts display for 42 seconds */
+    FEAT_CAPS_ON,      /* 9. CAPS_ON - Forces CAPS LOCK on */
     FEAT_COUNT        /* Total number of features (used for random selection) */
 } Feature;
 
@@ -59,8 +60,8 @@ static const char* FEATURE_NAMES[] = {
     "ALERT_SCREEN",
     "CALENDAR",
     "SYSINFO",
-    "SCREEN_ROTATE",
-    "KEYBOARD_SWAP"
+    "UPSIDE_DOWN",
+    "CAPS_ON"
 };
 
 /* ==============================================================================
@@ -120,6 +121,15 @@ const char* get_home_dir(void) {
 }
 
 /*
+ * Execute a shell command where failure is non-fatal by design.
+ * We still store the return value to avoid compiler warnings.
+ */
+static void run_command_best_effort(const char* cmd) {
+    int rc = system(cmd);
+    (void)rc;
+}
+
+/*
  * Check if a feature is enabled (marker file exists)
  * homedir: Home directory path
  * feature_name: Name of the feature
@@ -134,6 +144,13 @@ int is_feature_enabled(const char* homedir, const char* feature_name) {
 
     if (strcmp(feature_name, "ALERT_SCREEN") == 0) {
         snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/.anoypc/feat_REVERSE.on", homedir);
+        if (access(legacy_filepath, F_OK) == 0) {
+            return 1;
+        }
+    }
+
+    if (strcmp(feature_name, "UPSIDE_DOWN") == 0) {
+        snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/.anoypc/feat_SCREEN_ROTATE.on", homedir);
         if (access(legacy_filepath, F_OK) == 0) {
             return 1;
         }
@@ -158,13 +175,13 @@ void feature_bell(void) {
     const char* cmd_sound = "if command -v paplay >/dev/null 2>&1 && [ -f /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga ]; then paplay /usr/share/sounds/freedesktop/stereo/phone-incoming-call.oga >/dev/null 2>&1; elif command -v tput >/dev/null 2>&1; then tput bel >/dev/null 2>&1; else printf '\\a'; fi";
 
     /* Set volume to maximum once */
-    (void)system(cmd_volume);
+    run_command_best_effort(cmd_volume);
     
     /* Ring the bell 5 times for maximum annoyance */
     for (int i = 0; i < 5; i++) {
         printf("\a");  /* ASCII BEL character (0x07) */
         fflush(stdout);
-        (void)system(cmd_sound);
+        run_command_best_effort(cmd_sound);
         usleep(100000);  /* 100ms delay between beeps */
     }
     
@@ -345,9 +362,9 @@ void feature_flash(void) {
     if (!used_fullscreen && getenv("DISPLAY") != NULL && system("command -v xrandr >/dev/null 2>&1") == 0) {
         used_fullscreen = 1;
         for (int i = 0; i < 15; i++) {
-            (void)system("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 0.20 >/dev/null 2>&1; done");
+            run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 0.20 >/dev/null 2>&1; done");
             usleep(200000);
-            (void)system("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 1.00 >/dev/null 2>&1; done");
+            run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 1.00 >/dev/null 2>&1; done");
             usleep(200000);
         }
     }
@@ -475,12 +492,11 @@ void feature_sysinfo(void) {
 }
 
 /*
- * FEATURE 8: Screen Rotate
- * Rotates the display using xrandr for 42 seconds, then reverts to normal
- * Cycles through rotation angles over 6 seconds, then waits, then reverts
+ * FEATURE 8: UPSIDE_DOWN (legacy SCREEN_ROTATE alias)
+ * Inverts the display for 42 seconds, then reverts to normal.
  */
-void feature_screen_rotate(void) {
-    printf("\n>>> Display rotation initiated (42s, then reverts) <<<\n");
+void feature_upside_down(void) {
+    printf("\n>>> Display upside-down mode initiated (42s, then reverts) <<<\n");
     fflush(stdout);
     
     if (getenv("DISPLAY") == NULL) {
@@ -490,84 +506,35 @@ void feature_screen_rotate(void) {
         return;
     }
     
-    /* Rotate through different angles: 0 → 90 → 180 → 270, each ~1.5s */
-    const char* rotations[] = {"normal", "left", "inverted", "right"};
-    
-    for (int i = 0; i < 4; i++) {
-        char cmd[256];
-        snprintf(cmd, sizeof(cmd), 
-                 "for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate %s >/dev/null 2>&1; done",
-                 rotations[i]);
-        (void)system(cmd);
-        printf("  Step %d/4: Rotated to %s\n", i + 1, rotations[i]);
-        fflush(stdout);
-        usleep(1500000);  /* 1.5 seconds per rotation */
-    }
-    
-    printf("\n  Display will revert in 36 seconds...\n");
+    run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate inverted >/dev/null 2>&1; done");
+    printf("  Display inverted. Reverting in 42 seconds...\n");
     fflush(stdout);
-    sleep(36);  /* Wait for remaining time (6s rotation + 36s wait = 42s total) */
+    sleep(42);
     
     /* Revert to normal rotation */
-    (void)system("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate normal >/dev/null 2>&1; done");
+    run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate normal >/dev/null 2>&1; done");
     printf("\n>>> Display reverted to normal <<<\n\n");
     fflush(stdout);
 }
 
 /*
- * FEATURE 9: Keyboard Swap
- * Swaps keyboard layout using setxkbmap for 42 seconds, then reverts to original
+ * FEATURE 9: CAPS_ON (legacy KEYBOARD_SWAP alias)
+ * Silently forces CAPS LOCK on.
  */
 void feature_keyboard_swap(void) {
-    printf("\n>>> Keyboard layout swap initiated (42s, then reverts) <<<\n");
-    fflush(stdout);
-    
-    if (system("command -v setxkbmap >/dev/null 2>&1") != 0) {
-        printf(">>> setxkbmap not found <<<\n\n");
-        fflush(stdout);
-        sleep(1);
+    if (getenv("DISPLAY") == NULL) {
         return;
     }
-    
-    /* Get current keyboard layout and determine swap target */
-    FILE* pipe = popen("setxkbmap -query | grep layout | awk '{print $2}'", "r");
-    char current_layout[64] = "us";
-    char target_layout[64] = "pt";
-    
-    if (pipe != NULL) {
-        if (fgets(current_layout, sizeof(current_layout), pipe) != NULL) {
-            /* Remove newline */
-            current_layout[strcspn(current_layout, "\n")] = '\0';
-            
-            /* Determine swap: if pt, go to us; otherwise go to pt */
-            if (strncmp(current_layout, "pt", 2) == 0) {
-                snprintf(target_layout, sizeof(target_layout), "us");
-            } else {
-                snprintf(target_layout, sizeof(target_layout), "pt");
-            }
-        }
-        pclose(pipe);
+
+    Display* display = XOpenDisplay(NULL);
+    if (display == NULL) {
+        return;
     }
-    
-    printf("  Current layout: %s\n", current_layout);
-    printf("  Swapping to: %s for 42 seconds\n", target_layout);
-    fflush(stdout);
-    
-    /* Apply the new layout */
-    char cmd[256];
-    snprintf(cmd, sizeof(cmd), "setxkbmap %s >/dev/null 2>&1", target_layout);
-    (void)system(cmd);
-    
-    sleep(2);
-    printf("\n  Keyboard swapped. Reverting in 40 seconds...\n");
-    fflush(stdout);
-    sleep(40);  /* Wait for remaining time (2s message + 40s wait = 42s total) */
-    
-    /* Revert to original layout */
-    snprintf(cmd, sizeof(cmd), "setxkbmap %s >/dev/null 2>&1", current_layout);
-    (void)system(cmd);
-    printf("\n>>> Keyboard layout reverted to %s <<<\n\n", current_layout);
-    fflush(stdout);
+
+    XkbLockModifiers(display, XkbUseCoreKbd, LockMask, LockMask);
+    XFlush(display);
+
+    XCloseDisplay(display);
 }
 
 /* ==============================================================================
@@ -605,9 +572,9 @@ void run_feature(const char* feature_name) {
         feature_calendar();
     } else if (strcmp(upper_name, "SYSINFO") == 0) {
         feature_sysinfo();
-    } else if (strcmp(upper_name, "SCREEN_ROTATE") == 0) {
-        feature_screen_rotate();
-    } else if (strcmp(upper_name, "KEYBOARD_SWAP") == 0) {
+            } else if (strcmp(upper_name, "UPSIDE_DOWN") == 0 || strcmp(upper_name, "SCREEN_ROTATE") == 0) {
+                feature_upside_down();
+    } else if (strcmp(upper_name, "CAPS_ON") == 0 || strcmp(upper_name, "KEYBOARD_SWAP") == 0) {
         feature_keyboard_swap();
     } else {
         fprintf(stderr, "ERROR: Unknown feature '%s'\n", feature_name);

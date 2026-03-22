@@ -41,7 +41,7 @@ BINARY_NAME="AnoyPC"
 BINARY_PATH="$SCRIPT_DIR/$BINARY_NAME"
 
 # Feature names (must match enum in AnoyPC.c)
-FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "SCREEN_ROTATE" "KEYBOARD_SWAP")
+FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "UPSIDE_DOWN" "CAPS_ON")
 
 # ==============================================================================
 # UTILITY FUNCTIONS
@@ -238,7 +238,7 @@ create_features_script() {
 ANOYPC_DIR="$HOME/.anoypc"
 
 # Feature names
-FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "SCREEN_ROTATE" "KEYBOARD_SWAP")
+FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "UPSIDE_DOWN" "CAPS_ON")
 
 # Function to show feature status
 show_status() {
@@ -295,8 +295,8 @@ while true; do
         5) toggle_feature "ALERT_SCREEN" ;;
         6) toggle_feature "CALENDAR" ;;
         7) toggle_feature "SYSINFO" ;;
-        8) toggle_feature "SCREEN_ROTATE" ;;
-        9) toggle_feature "KEYBOARD_SWAP" ;;
+        8) toggle_feature "UPSIDE_DOWN" ;;
+        9) toggle_feature "CAPS_ON" ;;
         10) 
             echo "Enabling all features..."
             for feature in "${FEATURES[@]}"; do
@@ -354,8 +354,8 @@ while true; do
     echo "  5. Alert Screen"
     echo "  6. Calendar Joke"
     echo "  7. System Info Spoof"
-    echo "  8. Screen Rotate (42s)"
-    echo "  9. Keyboard Swap (42s)"
+    echo "  8. Upside Down (42s)"
+    echo "  9. CAPS ON"
     echo "  10. Exit"
     echo ""
     read -p "Choose (1-10): " choice
@@ -368,8 +368,8 @@ while true; do
         5) echo "Running ALERT_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" ALERT_SCREEN ;;
         6) echo "Running CALENDAR prank..."; "$ANOYPC_DIR/AnoyPC" CALENDAR ;;
         7) echo "Running SYSINFO prank..."; "$ANOYPC_DIR/AnoyPC" SYSINFO ;;
-        8) echo "Running SCREEN_ROTATE prank (42s)..."; "$ANOYPC_DIR/AnoyPC" SCREEN_ROTATE ;;
-        9) echo "Running KEYBOARD_SWAP prank (42s)..."; "$ANOYPC_DIR/AnoyPC" KEYBOARD_SWAP ;;
+        8) echo "Running UPSIDE_DOWN prank (42s)..."; "$ANOYPC_DIR/AnoyPC" UPSIDE_DOWN ;;
+        9) echo "Running CAPS_ON prank..."; "$ANOYPC_DIR/AnoyPC" CAPS_ON ;;
         10|q|Q)
             exit 0
             ;;

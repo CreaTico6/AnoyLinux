@@ -36,8 +36,8 @@ Foi criada com sucesso uma **versão completa em C puro** do AnoyingPC para Linu
 ✅ **ALERT_SCREEN** - Texto em modo reverse video com mensagens de erro  
 ✅ **CALENDAR** - Anomalia de data fake  
 ✅ **SYSINFO** - Relatório de sistema fake  
-✅ **SCREEN_ROTATE** - Rotaciona display por 42s e depois reverte ao normal  
-✅ **KEYBOARD_SWAP** - Alterna layout teclado pt↔us por 42s e depois reverte  
+✅ **UPSIDE_DOWN** - Inverte o display por 42s e depois reverte ao normal  
+✅ **CAPS_ON** - Liga CAPS LOCK de forma silenciosa  
 
 ---
 
