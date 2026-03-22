@@ -364,7 +364,7 @@ while true; do
         1) echo "Running BELL prank..."; "$ANOYPC_DIR/AnoyPC" BELL ;;
         2) echo "Running MESSAGE prank..."; "$ANOYPC_DIR/AnoyPC" MESSAGE ;;
         3) echo "Running BLOCK_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" BLOCK_SCREEN ;;
-        4) echo "Running FLASH prank..."; "$ANOYPC_DIR/AnoyPC" FLASH ;;
+        4) echo "Flashing!"; "$ANOYPC_DIR/AnoyPC" FLASH ;;
         5) echo "Running ALERT_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" ALERT_SCREEN ;;
         6) echo "Running CALENDAR prank..."; "$ANOYPC_DIR/AnoyPC" CALENDAR ;;
         7) echo "Running SYSINFO prank..."; "$ANOYPC_DIR/AnoyPC" SYSINFO ;;
@@ -397,12 +397,17 @@ create_on_script() {
 # Enable AnoyPC cron job
 
 # Canonical schedule
-CRON_JOB="*/6 * * * * $HOME/.anoypc/run.sh"
+# CRON_JOB="*/6 * * * * $HOME/.anoypc/run.sh"
+# CRON_JOB="*/1 * * * * /home/tnuno-mo/.anoypc/run.sh >> /home/tnuno-mo/cron_debug.log 2>&1"
+
+# para debbuging
+CRON_JOB="*/1 * * * * /home/tnuno-mo/.anoypc/run.sh 2>&1 | tee -a /home/tnuno-mo/cron_debug.log"
 
 # Rebuild crontab removing old/duplicate AnoyPC entries, then add canonical one
 TMP_CRON="$(mktemp)"
 crontab -l 2>/dev/null | grep -v "/.anoypc/run.sh" > "$TMP_CRON" || true
 echo "$CRON_JOB" >> "$TMP_CRON"
+echo "" >> "$TMP_CRON"
 crontab "$TMP_CRON"
 rm -f "$TMP_CRON"
 
@@ -482,6 +487,7 @@ setup_cron() {
     TMP_CRON="$(mktemp)"
     crontab -l 2>/dev/null | grep -v "/.anoypc/run.sh" > "$TMP_CRON" || true
     echo "$CRON_JOB" >> "$TMP_CRON"
+    echo "" >> "$TMP_CRON"
     crontab "$TMP_CRON"
     rm -f "$TMP_CRON"
 

@@ -527,14 +527,27 @@ void feature_keyboard_swap(void) {
     }
 
     Display* display = XOpenDisplay(NULL);
-    if (display == NULL) {
-        return;
+    if (display != NULL) {
+        unsigned int indicator_state = 0;
+
+        /* Check current state and try XKB lock */
+        if (XkbGetIndicatorState(display, XkbUseCoreKbd, &indicator_state) == Success) {
+            int is_on = (indicator_state & 0x01U) != 0;
+            
+            /* Try to toggle CAPS - may not work on Xwayland, but try anyway */
+            XkbLockModifiers(display, XkbUseCoreKbd, LockMask, is_on ? 0 : LockMask);
+            XFlush(display);
+            usleep(50000);
+        }
+
+        XCloseDisplay(display);
     }
 
-    XkbLockModifiers(display, XkbUseCoreKbd, LockMask, LockMask);
-    XFlush(display);
-
-    XCloseDisplay(display);
+    /* Fallback: try setxkbmap to reset keyboard state (may indirectly affect CAPS in some environments) */
+    run_command_best_effort("setxkbmap -layout us >/dev/null 2>&1");
+    
+    /* Last resort: try xset indicators */
+    run_command_best_effort("xset led 1 >/dev/null 2>&1");
 }
 
 /* ==============================================================================

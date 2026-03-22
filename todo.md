@@ -1,1 +1,2 @@
 - Trocar os espaços por tabs.
+- "Retirar as informações de que são pranks"
