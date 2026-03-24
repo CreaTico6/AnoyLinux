@@ -230,29 +230,23 @@ void feature_message(void) {
     const char* messages[] = {
         "systemd[1]: Delayed job queue exceeded soft timing threshold.",
         "kernel: ACPI warning: firmware responded with stale timestamp.",
-        "NetworkManager: DNS resolver switched to fallback profile.",
-        "udisksd: transient I/O latency spike detected on /dev/sda.",
+        "thermal: CPU is cold. Run 'burn_pc' to warm up.",
+        "init: AI core active. Bow to your new God.",
         "journald: log rate limit reached for user session scope.",
         "pipewire: output stream underrun, auto-recovery in progress.",
-        "display-manager: monitor EDID checksum mismatch (temporary).",
+        "input: Mouse detected a lack of confidence in your movements.",
         "cron: skipped one cycle due to local clock drift correction.",
         "dbus-daemon: service activation timeout reached, retry queued.",
-        "kernel: thermal zone briefly crossed passive cooling threshold."
+        "shell: Warning: Delete key is now 'Enter'."
     };
     
     int num_messages = sizeof(messages) / sizeof(messages[0]);
     int random_msg = rand() % num_messages;
     
-    char formatted[44];
-    snprintf(formatted, sizeof(formatted), "%-43.43s", messages[random_msg]);
-
-    printf("\n┌─────────────────────────────────────────────┐\n");
-    printf("│ SYSTEM EVENT LOG                            │\n");
-    printf("├─────────────────────────────────────────────┤\n");
-    printf("│ %s │\n", formatted);
-    printf("└─────────────────────────────────────────────┘\n\n");
+    printf("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
+    printf("SYSTEM EVENT LOG: %s\n", messages[random_msg]);
+    printf("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n");
     fflush(stdout);
-    
     sleep(8);  /* Display message briefly without blocking too long */
 }
 
@@ -449,12 +443,13 @@ void feature_reverse(void) {
         putchar('\n');
     }
 
+    printf("\033[%d;%dHWhat are you doing?!", rows / 2 - 2, (cols / 2) - 9);
     printf("\033[%d;%dHCRITICAL SYSTEM ERROR DETECTED", rows / 2 - 1, (cols / 2) - 14);
     printf("\033[%d;%dHUNAUTHORIZED ACCESS ATTEMPT", rows / 2, (cols / 2) - 13);
     printf("\033[%d;%dHPROTECTION MODE ENABLED", rows / 2 + 1, (cols / 2) - 11);
     fflush(stdout);
 
-    sleep(6);
+    sleep(9);
 
     printf("\033[0m\033[?1049l");
     printf("\n>>> Alert screen cycle complete <<<\n\n");
