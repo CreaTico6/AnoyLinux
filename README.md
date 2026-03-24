@@ -41,8 +41,8 @@ Every 6 minutes the scheduler randomly picks **one enabled feature** and trigger
 | 5 | **Alert Screen** | Prints text in reverse video mode with error messages | Auto-resets after 3 seconds |
 | 6 | **Calendar Joke** | Shows a fake calendar warning or date anomaly | Just dismiss it |
 | 7 | **System Info Spoof** | Prints fake system diagnostic information | Just ignore it |
-| 8 | **Screen Rotate** | Rotates display through 4 orientations for 42 seconds | Auto-reverts after 42 seconds |
-| 9 | **Keyboard Swap** | Swaps keyboard layout between Portuguese and US for 42 seconds | Auto-reverts after 42 seconds |
+| 8 | **Upside Down** (`UPSIDE_DOWN`, alias: `SCREEN_ROTATE`) | Inverts display for 42 seconds | Auto-reverts after 42 seconds |
+| 9 | **Caps On** (`CAPS_ON`, alias: `KEYBOARD_SWAP`) | Forces Caps Lock ON | Turn off Caps Lock manually |
 
 All 9 features are **ON by default** and can be individually toggled from the `features.sh` menu.
 
@@ -237,7 +237,7 @@ Edit `setup.sh` and change the cron interval:
 - Works on most Linux distributions
 
 ⚠️ **X11 Features:**
-- Advanced features (mouse hide/show) require X11
+- Advanced visual/keyboard effects require X11
 - Falls back gracefully on Wayland or headless systems
 - Features degrade gracefully if X11 is unavailable
 

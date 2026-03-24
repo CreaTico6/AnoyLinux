@@ -191,7 +191,7 @@ create_log() {
     print_header "Setting Up Logging"
     
     touch "$ANOYPC_DIR/anoypc.log"
-    chmod 666 "$ANOYPC_DIR/anoypc.log"
+    chmod 644 "$ANOYPC_DIR/anoypc.log"
     
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] AnoyPC installed and activated" >> "$ANOYPC_DIR/anoypc.log"
     
@@ -212,6 +212,11 @@ create_run_script() {
 #!/bin/bash
 # Internal runner called by cron scheduler
 # Executes a random enabled feature or a specified feature
+
+# Diagnóstico de ambiente cron
+export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
+export DISPLAY=":0"
+echo "[$(date)] run.sh started (UID=$UID, PATH=$PATH, DISPLAY=$DISPLAY)" >> "$HOME/.anoypc/anoypc.log" 2>&1
 
 ANOYPC_DIR="$HOME/.anoypc"
 
@@ -397,17 +402,12 @@ create_on_script() {
 # Enable AnoyPC cron job
 
 # Canonical schedule
-# CRON_JOB="*/6 * * * * $HOME/.anoypc/run.sh"
-# CRON_JOB="*/1 * * * * /home/tnuno-mo/.anoypc/run.sh >> /home/tnuno-mo/cron_debug.log 2>&1"
-
-# para debbuging
-CRON_JOB="*/1 * * * * /home/tnuno-mo/.anoypc/run.sh 2>&1 | tee -a /home/tnuno-mo/cron_debug.log"
+CRON_JOB="*/6 * * * * $HOME/.anoypc/run.sh"
 
 # Rebuild crontab removing old/duplicate AnoyPC entries, then add canonical one
 TMP_CRON="$(mktemp)"
 crontab -l 2>/dev/null | grep -v "/.anoypc/run.sh" > "$TMP_CRON" || true
 echo "$CRON_JOB" >> "$TMP_CRON"
-echo "" >> "$TMP_CRON"
 crontab "$TMP_CRON"
 rm -f "$TMP_CRON"
 

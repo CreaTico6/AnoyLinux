@@ -32,7 +32,7 @@ Após `./setup.sh`, os seguintes ficheiros são criados em `~/.anoypc/`:
 | **anoyoff.sh** | Script para desativar cron job temporariamente |
 | **anoydel.sh** | Script para remoção completa |
 | **anoypc.log** | Ficheiro de log de execuções |
-| **feat_*.on** | Ficheiros marcadores de features (7 no total) |
+| **feat_*.on** | Ficheiros marcadores de features (9 no total) |
 
 ---
 
@@ -63,9 +63,8 @@ make           # Compilar
 ### Verificar Compilação
 
 ```bash
-./anoypc --help  # Não existe (programa não tem opções)
-./anoypc BELL    # Testar feature específica
-./anoypc         # Testar feature aleatória
+./AnoyPC BELL    # Testar feature específica
+./AnoyPC         # Testar feature aleatória
 ```
 
 ---
@@ -129,7 +128,7 @@ O script fará:
 
 ---
 
-## 🎭 As 7 Funcionalidades
+## 🎭 As 9 Funcionalidades
 
 ### 1. Terminal Bell (`BELL`)
 - **O que faz:** Emite 5 bips sonoros altos + mensagem fake de alerta
@@ -141,18 +140,17 @@ O script fará:
 - **Formato:** Caixa decorativa com mensagem assustadora
 - **Duração:** 3 segundos
 
-### 3. Mouse Hide/Show (`MOUSE`)
-- **O que faz:** Move cursor para canto (0,0) ou centro (50%, 50%)
-- **Dependência:** Requer `xdotool` instalado
-- **Fallback:** Funciona mesmo sem X11
-- **Duração:** 2 segundos
+### 3. Block Screen (`BLOCK_SCREEN`, alias: `MOUSE`)
+- **O que faz:** Mostra overlay preto em ecrã inteiro e bloqueia input
+- **Saída:** tecla `*` ou timeout
+- **Duração:** 42 segundos
 
 ### 4. Screen Flash (`FLASH`)
 - **O que faz:** Pisca cores alternadas (vermelho/amarelo) no terminal
 - **Código:** Usa sequences ANSI escape
 - **Duração:** ~1 segundo
 
-### 5. Reverse Video (`REVERSE`)
+### 5. Alert Screen (`ALERT_SCREEN`, alias: `REVERSE`)
 - **O que faz:** Mostra texto em modo reverse (branco em preto)
 - **Código:** `\033[7m` (reverse) e `\033[0m` (reset)
 - **Duração:** 3 segundos
@@ -167,6 +165,15 @@ O script fará:
 - **Inclui:** CPU, RAM, Disk, Network, Thermal, Power
 - **Duração:** 3 segundos
 
+### 8. Upside Down (`UPSIDE_DOWN`, alias: `SCREEN_ROTATE`)
+- **O que faz:** Inverte o display
+- **Duração:** 42 segundos
+- **Reversão:** automática para `normal`
+
+### 9. Caps On (`CAPS_ON`, alias: `KEYBOARD_SWAP`)
+- **O que faz:** Força CAPS LOCK ligado
+- **Duração:** até desligar manualmente
+
 ---
 
 ## 📈 Fluxo de Execução
@@ -179,18 +186,18 @@ setup.sh
 ├─ make clean && make
 ├─ mkdir ~/.anoypc
 ├─ cp AnoyPC ~/.anoypc/
-├─ touch feat_*.on (7 files)
+├─ touch feat_*.on (9 files)
 ├─ Create scripts (run.sh, features.sh, test.sh, etc)
-├─ crontab -e (register */5 job)
+├─ crontab update (register */6 job)
 └─ ln -s ~/.local/bin/ (convenience links)
 ```
 
 ### Ciclo de Execução
 
 ```
-Cada 5 minutos (cron):
+Cada 6 minutos (cron):
 ├─ ~/.anoypc/run.sh
-│  └─ ~/.anoypc/anoypc
+│  └─ ~/.anoypc/AnoyPC
 │     ├─ Check enabled features (feat_*.on files)
 │     ├─ Select random enabled feature
 │     ├─ Log execution
@@ -270,7 +277,7 @@ Todas as execuções são registadas:
 crontab -l | grep anoypc
 
 # Resultado esperado:
-*/5 * * * * ~/.anoypc/run.sh
+*/6 * * * * ~/.anoypc/run.sh
 ```
 
 ---
@@ -279,7 +286,7 @@ crontab -l | grep anoypc
 
 ### Alterar Intervalo de Execução
 
-Editar `setup.sh` (linha com `*/5`):
+Editar `setup.sh` (linha com `*/6`):
 
 ```bash
 # A cada 1 minuto:

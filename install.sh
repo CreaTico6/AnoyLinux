@@ -8,15 +8,12 @@ ANOYPC_DIR="$HOME/.anoypc"
 
 print_usage() {
     cat << 'EOF'
-Usage: ./install_and_start.sh
+Usage: ./install.sh
 
 What it does:
   1) Runs setup.sh (compile + install + cron configuration)
   2) Ensures cron is enabled via ~/.anoypc/anoyon.sh
-  (no pranks are triggered during setup)
-
-Options:
-  -h, --help Show this help
+  3) Does NOT trigger any prank immediately
 EOF
 }
 
@@ -42,15 +39,19 @@ fi
 
 chmod +x "$SETUP_SCRIPT"
 
-echo "[1/2] Running setup..."
+echo "[1/3] Running setup..."
 "$SETUP_SCRIPT"
 
 if [ -x "$ANOYPC_DIR/anoyon.sh" ]; then
-    echo "[2/2] Ensuring scheduler is enabled..."
+    echo "[2/3] Ensuring scheduler is enabled..."
     "$ANOYPC_DIR/anoyon.sh" >/dev/null 2>&1 || true
 fi
 
-clear || cls
+echo "[3/3] No prank triggered."
+
 echo
-echo "tnuno-mo"
-echo
+echo "Done. AnoyPC is installed and running."
+echo "- Scheduler: every 6 minutes"
+echo "- Log file: $ANOYPC_DIR/anoypc.log"
+echo "- Test menu: $ANOYPC_DIR/test.sh"
+echo "- Feature menu: $ANOYPC_DIR/features.sh"

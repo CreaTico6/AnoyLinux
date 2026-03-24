@@ -8,7 +8,7 @@ Foi criada com sucesso uma **versão completa em C puro** do AnoyingPC para Linu
 
 ## 📁 Ficheiros Criados
 
-### Na pasta `/home/tnuno-mo/Projects/AnoyLinux/`
+### Na pasta do projeto `AnoyLinux/`
 
 | Ficheiro | Linhas | Descrição |
 |----------|--------|-----------|
@@ -125,7 +125,7 @@ tail -f ~/.anoypc/anoypc.log
 
 ✅ **Graceful Fallback**
 - Se X11 não está disponível, features degradam gracefully
-- Se xdotool não existe, mouse feature ainda funciona
+- Sem dependência obrigatória de xdotool
 - Sem crashes em situações inesperadas
 
 ---
@@ -141,14 +141,16 @@ tail -f ~/.anoypc/anoypc.log
 │  ├─ get_home_dir()
 │  └─ is_feature_enabled()
 │
-├─ Feature Implementations    (350+ línhas)
+├─ Feature Implementations    (400+ línhas)
 │  ├─ feature_bell()
 │  ├─ feature_message()
-│  ├─ feature_mouse()
+│  ├─ feature_block_screen()
 │  ├─ feature_flash()
 │  ├─ feature_reverse()
 │  ├─ feature_calendar()
-│  └─ feature_sysinfo()
+│  ├─ feature_sysinfo()
+│  ├─ feature_upside_down()
+│  └─ feature_keyboard_swap()
 │
 ├─ Dispatcher                 (50 línhas)
 │  ├─ run_feature()

@@ -46,7 +46,7 @@ all: $(PROGRAM)
 # Link object file to create executable
 $(PROGRAM): $(OBJECT)
 	@echo "Linking $@..."
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 	@echo "✓ Build complete: $(PROGRAM)"
 
 # Compile source to object file

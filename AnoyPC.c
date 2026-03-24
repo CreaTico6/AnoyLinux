@@ -33,6 +33,25 @@
 #include <X11/keysym.h>
 #include <X11/XKBlib.h>
 
+/* Forward declaration for signal handler use */
+static void run_command_best_effort(const char* cmd);
+
+#include <signal.h>
+
+static volatile sig_atomic_t upside_down_active = 0;
+void revert_display_rotation(void) {
+    run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate normal >/dev/null 2>&1; done");
+}
+
+void handle_signal(int sig) {
+    if (upside_down_active) {
+        revert_display_rotation();
+        printf("\n>>> Display reverted to normal (signal %d) <<<\n\n", sig);
+        fflush(stdout);
+    }
+    _exit(128 + sig);
+}
+
 /* ==============================================================================
  * FEATURE DEFINITIONS - Define all available prank features here
  * ============================================================================*/
@@ -155,6 +174,13 @@ int is_feature_enabled(const char* homedir, const char* feature_name) {
             return 1;
         }
     }
+
+    if (strcmp(feature_name, "CAPS_ON") == 0) {
+        snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/.anoypc/feat_KEYBOARD_SWAP.on", homedir);
+        if (access(legacy_filepath, F_OK) == 0) {
+            return 1;
+        }
+    }
     
     /* Check if file exists (accessible with read permission) */
     return access(filepath, F_OK) == 0;
@@ -227,7 +253,7 @@ void feature_message(void) {
     printf("└─────────────────────────────────────────────┘\n\n");
     fflush(stdout);
     
-    sleep(30);  /* Display message for 30 seconds */
+    sleep(8);  /* Display message briefly without blocking too long */
 }
 
 /*
@@ -350,12 +376,17 @@ void feature_block_screen(void) {
 void feature_flash(void) {
     int used_fullscreen = 0;
     const char* cmd_flash_tk = "python3 -c \"import tkinter as t,time; r=t.Tk(); r.attributes('-fullscreen',True); r.attributes('-topmost',True); r.configure(bg='black'); r.update(); [(r.configure(bg=c), r.update(), time.sleep(0.20)) for c in (['white','black']*15)]; r.destroy()\" >/dev/null 2>&1";
+    int tk_available = 0;
 
     printf("\n");
     fflush(stdout);
 
+    if (getenv("DISPLAY") != NULL && system("command -v python3 >/dev/null 2>&1 && python3 -c 'import tkinter' >/dev/null 2>&1") == 0) {
+        tk_available = 1;
+    }
+
     /* Full-screen desktop flash attempt (no sudo required) */
-    if (getenv("DISPLAY") != NULL && system(cmd_flash_tk) == 0) {
+    if (getenv("DISPLAY") != NULL && tk_available && system(cmd_flash_tk) == 0) {
         used_fullscreen = 1;
     }
 
@@ -447,9 +478,9 @@ void feature_calendar(void) {
         char recorded_date[64];
 
         snprintf(current_date, sizeof(current_date), "Current system date: %04d-%02d-%02d",
-               timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
+              timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday);
         snprintf(recorded_date, sizeof(recorded_date), "Recorded date: %04d-%02d-%02d",
-               timeinfo->tm_year + 1900, fake_month, fake_day);
+              timeinfo->tm_year + 1900, fake_month, fake_day);
 
         printf("\n╔════════════════════════════════════════════╗\n");
         printf("║ CALENDAR ANOMALY DETECTED!                 ║\n");
@@ -498,21 +529,22 @@ void feature_sysinfo(void) {
 void feature_upside_down(void) {
     printf("\n>>> Display upside-down mode initiated (42s, then reverts) <<<\n");
     fflush(stdout);
-    
     if (getenv("DISPLAY") == NULL) {
         printf(">>> No X11 display found <<<\n\n");
         fflush(stdout);
         sleep(1);
         return;
     }
-    
+    upside_down_active = 1;
+    signal(SIGINT, handle_signal);
+    signal(SIGTERM, handle_signal);
     run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate inverted >/dev/null 2>&1; done");
     printf("  Display inverted. Reverting in 42 seconds...\n");
     fflush(stdout);
     sleep(42);
-    
     /* Revert to normal rotation */
-    run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate normal >/dev/null 2>&1; done");
+    revert_display_rotation();
+    upside_down_active = 0;
     printf("\n>>> Display reverted to normal <<<\n\n");
     fflush(stdout);
 }
@@ -530,12 +562,9 @@ void feature_keyboard_swap(void) {
     if (display != NULL) {
         unsigned int indicator_state = 0;
 
-        /* Check current state and try XKB lock */
+        /* Force CAPS ON (do not toggle) */
         if (XkbGetIndicatorState(display, XkbUseCoreKbd, &indicator_state) == Success) {
-            int is_on = (indicator_state & 0x01U) != 0;
-            
-            /* Try to toggle CAPS - may not work on Xwayland, but try anyway */
-            XkbLockModifiers(display, XkbUseCoreKbd, LockMask, is_on ? 0 : LockMask);
+            XkbLockModifiers(display, XkbUseCoreKbd, LockMask, LockMask);
             XFlush(display);
             usleep(50000);
         }
@@ -543,10 +572,7 @@ void feature_keyboard_swap(void) {
         XCloseDisplay(display);
     }
 
-    /* Fallback: try setxkbmap to reset keyboard state (may indirectly affect CAPS in some environments) */
-    run_command_best_effort("setxkbmap -layout us >/dev/null 2>&1");
-    
-    /* Last resort: try xset indicators */
+    /* Fallback: try xset indicator directly */
     run_command_best_effort("xset led 1 >/dev/null 2>&1");
 }
 
@@ -585,8 +611,8 @@ void run_feature(const char* feature_name) {
         feature_calendar();
     } else if (strcmp(upper_name, "SYSINFO") == 0) {
         feature_sysinfo();
-            } else if (strcmp(upper_name, "UPSIDE_DOWN") == 0 || strcmp(upper_name, "SCREEN_ROTATE") == 0) {
-                feature_upside_down();
+    } else if (strcmp(upper_name, "UPSIDE_DOWN") == 0 || strcmp(upper_name, "SCREEN_ROTATE") == 0) {
+        feature_upside_down();
     } else if (strcmp(upper_name, "CAPS_ON") == 0 || strcmp(upper_name, "KEYBOARD_SWAP") == 0) {
         feature_keyboard_swap();
     } else {
