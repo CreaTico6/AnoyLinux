@@ -1,3 +1,11 @@
+##
+##	AnoyPC
+##
+##	by: creatico6@gmail.com
+##
+##					march 2026
+##
+
 #!/bin/bash
 #
 # AnoyingPC Linux - Setup Script
@@ -17,7 +25,7 @@
 #   7. Creates convenient symlinks in ~/.local/bin/
 #   8. Sets up logging
 #
-# Author: CreaTico6 (Linux Edition)
+# Author: CreaTico6
 # Date: March 2026
 #
 
@@ -41,7 +49,20 @@ BINARY_NAME="AnoyPC"
 BINARY_PATH="$SCRIPT_DIR/$BINARY_NAME"
 
 # Feature names (must match enum in AnoyPC.c)
-FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "UPSIDE_DOWN" "CAPS_ON")
+FEATURES=(
+    "BELL"
+    "MESSAGE"
+    "BLOCK_SCREEN"
+    "FLASH"
+    "ALERT_SCREEN"
+    "CALENDAR"
+    "SYSINFO"
+    "UPSIDE_DOWN"
+    "CAPS_ON"
+    "MOUSE_JITTER"
+    "BRIGHTNESS_PULSE"
+    "MATRIX_FULLSCREEN"
+)
 
 # ==============================================================================
 # UTILITY FUNCTIONS
@@ -243,7 +264,20 @@ create_features_script() {
 ANOYPC_DIR="$HOME/.anoypc"
 
 # Feature names
-FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "UPSIDE_DOWN" "CAPS_ON")
+FEATURES=(
+    "BELL"
+    "MESSAGE"
+    "BLOCK_SCREEN"
+    "FLASH"
+    "ALERT_SCREEN"
+    "CALENDAR"
+    "SYSINFO"
+    "UPSIDE_DOWN"
+    "CAPS_ON"
+    "MOUSE_JITTER"
+    "BRIGHTNESS_PULSE"
+    "MATRIX_FULLSCREEN"
+)
 
 # Function to show feature status
 show_status() {
@@ -302,7 +336,10 @@ while true; do
         7) toggle_feature "SYSINFO" ;;
         8) toggle_feature "UPSIDE_DOWN" ;;
         9) toggle_feature "CAPS_ON" ;;
-        10) 
+       10) toggle_feature "MOUSE_JITTER" ;;
+       11) toggle_feature "BRIGHTNESS_PULSE" ;;
+       12) toggle_feature "MATRIX_FULLSCREEN" ;;
+       13)
             echo "Enabling all features..."
             for feature in "${FEATURES[@]}"; do
                 touch "$ANOYPC_DIR/feat_$feature.on"
@@ -310,7 +347,7 @@ while true; do
             echo "✓ All features enabled"
             sleep 1
             ;;
-        11)
+       14)
             echo "Disabling all features..."
             for feature in "${FEATURES[@]}"; do
                 rm -f "$ANOYPC_DIR/feat_$feature.on"
@@ -318,7 +355,7 @@ while true; do
             echo "✓ All features disabled"
             sleep 1
             ;;
-        12|q|Q)
+       15|q|Q)
             exit 0
             ;;
         *)
@@ -361,10 +398,16 @@ while true; do
     echo "  7. System Info Spoof"
     echo "  8. Upside Down (42s)"
     echo "  9. CAPS ON"
-    echo "  10. Exit"
+    echo " 10. Mouse Jitter"
+    echo " 11. Brightness Pulse"
+    echo " 12. Matrix Fullscreen"
+    echo " 13. Enable ALL features"
+    echo " 14. Disable ALL features"
+    echo " 15. Exit"
     echo ""
-    read -p "Choose (1-10): " choice
-    
+
+    read -p "Choose (1-15): " choice
+
     case $choice in
         1) echo "Running BELL prank..."; "$ANOYPC_DIR/AnoyPC" BELL ;;
         2) echo "Running MESSAGE prank..."; "$ANOYPC_DIR/AnoyPC" MESSAGE ;;
@@ -375,7 +418,10 @@ while true; do
         7) echo "Running SYSINFO prank..."; "$ANOYPC_DIR/AnoyPC" SYSINFO ;;
         8) echo "Running UPSIDE_DOWN prank (42s)..."; "$ANOYPC_DIR/AnoyPC" UPSIDE_DOWN ;;
         9) echo "Running CAPS_ON prank..."; "$ANOYPC_DIR/AnoyPC" CAPS_ON ;;
-        10|q|Q)
+       10) echo "Running MOUSE_JITTER prank..."; "$ANOYPC_DIR/AnoyPC" MOUSE_JITTER ;;
+       11) echo "Running BRIGHTNESS_PULSE prank..."; "$ANOYPC_DIR/AnoyPC" BRIGHTNESS_PULSE ;;
+    12) echo "Running MATRIX_FULLSCREEN prank..."; "$ANOYPC_DIR/AnoyPC" MATRIX_FULLSCREEN ;;
+       13|q|Q)
             exit 0
             ;;
         *)
@@ -383,7 +429,7 @@ while true; do
             sleep 1
             ;;
     esac
-    
+
     echo ""
     read -p "Press Enter to continue..."
 done

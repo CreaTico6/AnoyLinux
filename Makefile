@@ -1,10 +1,10 @@
-#-------------------------------#
-#	AnoyPC						#
-#								#
-#	by: creatico6@gmail.com		#
-#								#
-#					march 2026	#
-#-------------------------------#
+##
+##	AnoyPC
+##
+##	by: creatico6@gmail.com
+##
+##					march 2026
+##
 
 # AnoyingPC Linux - Makefile
 #
