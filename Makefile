@@ -36,7 +36,7 @@ INSTALL_DIR = $(HOME)/.local/bin
 # DEFAULT TARGET
 # ============================================================================
 
-# Default target: compile the program
+# Default target: compile the program only
 all: $(PROGRAM)
 
 # ============================================================================
@@ -64,16 +64,12 @@ clean:
 	rm -f $(OBJECT) $(PROGRAM)
 	@echo "✓ Clean complete"
 
-# Install: copy executable to system directory (optional)
+
+# Install: run install.sh (full setup)
 install: $(PROGRAM)
-	@echo "Installing $(PROGRAM) to $(INSTALL_DIR)..."
-	@if [ ! -d "$(INSTALL_DIR)" ]; then \
-		echo "Creating $(INSTALL_DIR)..."; \
-		mkdir -p "$(INSTALL_DIR)"; \
-	fi
-	@cp $(PROGRAM) $(INSTALL_DIR)/$(PROGRAM)
-	@chmod 755 $(INSTALL_DIR)/$(PROGRAM)
-	@echo "✓ Installation complete"
+	@echo "Running full installation via install.sh..."
+	@chmod +x ./install.sh
+	@bash ./install.sh
 
 # Uninstall: remove executable from system directory (optional)
 uninstall:

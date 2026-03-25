@@ -12,7 +12,7 @@
  * 
  * A minimalist prank application that executes harmless system
  * disruptions on Linux. Features are toggled via marker files
- * and executed via a cron scheduler (every 6 minutes).
+ * and executed via a cron scheduler (every 30 minutes).
  * 
  * Compilation: gcc -o AnoyPC AnoyPC.c
  * Usage: ./AnoyPC [FEATURE_NAME]
@@ -195,12 +195,34 @@ void feature_matrix(void) {
 	XDestroyWindow(display, win);
 	XCloseDisplay(display);
 }
+
+// --- Brightness Pulse Signal Handler ---
+static volatile sig_atomic_t brightness_pulse_active = 0;
+void restore_brightness(void) {
+	char cmd[256];
+	snprintf(cmd, sizeof(cmd), "for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 1.00 >/dev/null 2>&1; done");
+	system(cmd);
+}
+
+void handle_brightness_signal(int sig) {
+	if (brightness_pulse_active) {
+		restore_brightness();
+		printf("\n>>> Brightness restored to normal (signal %d) <<<\n\n", sig);
+		fflush(stdout);
+	}
+	_exit(128 + sig);
+}
 /*
  * FEATURE 11: BRIGHTNESS_PULSE
  * Pulsa o brilho do ecrã rapidamente usando xrandr
  */
 void feature_brightness_pulse(void) {
     if (getenv("DISPLAY") == NULL) return;
+
+	// Ativar sinal para restaurar brilho ao ser interrompido
+	brightness_pulse_active = 1;
+	signal(SIGINT, handle_brightness_signal);
+	signal(SIGTERM, handle_brightness_signal);
 
 	char cmd[256];
 	float b;
@@ -224,6 +246,7 @@ void feature_brightness_pulse(void) {
 	// Restore brightness to 1.0 at the end
 	snprintf(cmd, sizeof(cmd), "for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --brightness 1.00 >/dev/null 2>&1; done");
 	system(cmd);
+	brightness_pulse_active = 0;
 }
 
 /*
@@ -696,30 +719,21 @@ void feature_sysinfo(void) {
 void feature_upside_down(void) {
 	printf("\n>>> Display upside-down mode initiated (42s, then reverts) <<<\n");
 	fflush(stdout);
-	if (getenv("DISPLAY") == NULL) {
-		printf(">>> No X11 display found <<<\n\n");
-		fflush(stdout);
-		sleep(1);
-		return;
-	}
+	if (getenv("DISPLAY") == NULL) return;
+
 	upside_down_active = 1;
 	signal(SIGINT, handle_signal);
 	signal(SIGTERM, handle_signal);
+
+	// Rotate all connected displays to inverted
 	run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate inverted >/dev/null 2>&1; done");
-	printf("  Display inverted. Reverting in 42 seconds...\n");
-	fflush(stdout);
+
 	sleep(42);
-	/* Revert to normal rotation */
+
+	// Restore all displays to normal
 	revert_display_rotation();
 	upside_down_active = 0;
-	printf("\n>>> Display reverted to normal <<<\n\n");
-	fflush(stdout);
 }
-
-/*
- * FEATURE 9: CAPS_ON (legacy KEYBOARD_SWAP alias)
- * Silently forces CAPS LOCK on.
- */
 void feature_keyboard_swap(void) {
 	if (getenv("DISPLAY") == NULL) {
 		return;

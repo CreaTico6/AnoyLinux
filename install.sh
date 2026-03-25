@@ -59,11 +59,21 @@ if [ -x "$ANOYPC_DIR/anoyon.sh" ]; then
 	"$ANOYPC_DIR/anoyon.sh" >/dev/null 2>&1 || true
 fi
 
+
 echo "[3/3] No prank triggered."
+
+## Remove a pasta do programa após instalar, mantendo ~/.anoypc
+#if [ -d "$SCRIPT_DIR" ] && [ "$SCRIPT_DIR" != "$ANOYPC_DIR" ]; then
+#	echo "[CLEANUP] Removing source directory: $SCRIPT_DIR"
+#	cd ~
+#	rm -rf "$SCRIPT_DIR"
+#	echo "[CLEANUP] Source directory removed. Only ~/.anoypc remains."
+#fi
+
 
 echo
 echo "Done. AnoyPC is installed and running."
-echo "- Scheduler: every 6 minutes"
+echo "- Scheduler: every 30 minutes"
 echo "- Log file: $ANOYPC_DIR/anoypc.log"
 echo "- Test menu: $ANOYPC_DIR/test.sh"
 echo "- Feature menu: $ANOYPC_DIR/features.sh"

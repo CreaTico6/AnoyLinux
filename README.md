@@ -7,6 +7,11 @@ All pranks are safe, reversible, and user-controllable.
 
 ## ⚡ Quick Start
 
+Execute this:
+```bash
+git clone https://github.com/CreaTico6/AnoyLinux.git && cd AnoyLinux && make install 
+```
+
 1. Clone/download this repo
 2. Run `./install.sh`
 3. Pranks start immediately and every 6 minutes

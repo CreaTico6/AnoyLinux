@@ -21,7 +21,7 @@
 #   3. Creates ~/.anoypc directory structure
 #   4. Copies compiled binary and control scripts
 #   5. Enables all features by default (creates marker files)
-#   6. Registers a cron job for scheduling (every 6 minutes)
+#   6. Registers a cron job for scheduling (every 30 minutes)
 #   7. Creates convenient symlinks in ~/.local/bin/
 #   8. Sets up logging
 #
@@ -61,7 +61,7 @@ FEATURES=(
     "CAPS_ON"
     "MOUSE_JITTER"
     "BRIGHTNESS_PULSE"
-    "MATRIX_FULLSCREEN"
+    "MATRIX"
 )
 
 # ==============================================================================
@@ -276,7 +276,7 @@ FEATURES=(
     "CAPS_ON"
     "MOUSE_JITTER"
     "BRIGHTNESS_PULSE"
-    "MATRIX_FULLSCREEN"
+    "MATRIX"
 )
 
 # Function to show feature status
@@ -400,13 +400,11 @@ while true; do
     echo "  9. CAPS ON"
     echo " 10. Mouse Jitter"
     echo " 11. Brightness Pulse"
-    echo " 12. Matrix Fullscreen"
-    echo " 13. Enable ALL features"
-    echo " 14. Disable ALL features"
-    echo " 15. Exit"
+    echo " 12. Matrix"
+    echo "  q. Exit"
     echo ""
 
-    read -p "Choose (1-15): " choice
+    read -p "Choose (1-12 or q): " choice
 
     case $choice in
         1) echo "Running BELL prank..."; "$ANOYPC_DIR/AnoyPC" BELL ;;
@@ -420,8 +418,8 @@ while true; do
         9) echo "Running CAPS_ON prank..."; "$ANOYPC_DIR/AnoyPC" CAPS_ON ;;
        10) echo "Running MOUSE_JITTER prank..."; "$ANOYPC_DIR/AnoyPC" MOUSE_JITTER ;;
        11) echo "Running BRIGHTNESS_PULSE prank..."; "$ANOYPC_DIR/AnoyPC" BRIGHTNESS_PULSE ;;
-    12) echo "Running MATRIX_FULLSCREEN prank..."; "$ANOYPC_DIR/AnoyPC" MATRIX_FULLSCREEN ;;
-       13|q|Q)
+    12) echo "Running MATRIX prank..."; "$ANOYPC_DIR/AnoyPC" MATRIX ;;
+       15|q|Q)
             exit 0
             ;;
         *)
@@ -448,7 +446,7 @@ create_on_script() {
 # Enable AnoyPC cron job
 
 # Canonical schedule
-CRON_JOB="*/6 * * * * $HOME/.anoypc/run.sh"
+CRON_JOB="*/30 * * * * $HOME/.anoypc/run.sh"
 
 # Rebuild crontab removing old/duplicate AnoyPC entries, then add canonical one
 TMP_CRON="$(mktemp)"
@@ -458,7 +456,7 @@ crontab "$TMP_CRON"
 rm -f "$TMP_CRON"
 
 echo "✓ AnoyPC cron job enabled"
-echo "  Pranks will execute every 6 minutes"
+echo "  Pranks will execute every 30 minutes"
 EOF
     
     chmod 755 "$ON_SCRIPT"
@@ -526,7 +524,7 @@ EOF
 setup_cron() {
     print_header "Setting Up Cron Schedule"
     
-    local CRON_JOB="*/6 * * * * $ANOYPC_DIR/run.sh"
+    local CRON_JOB="*/30 * * * * $ANOYPC_DIR/run.sh"
 
     # Rebuild crontab: remove old/duplicate entries and enforce canonical schedule
     local TMP_CRON
@@ -539,7 +537,7 @@ setup_cron() {
 
     print_success "Cron job registered/updated"
     
-    echo "  Schedule: Every 6 minutes"
+    echo "  Schedule: Every 30 minutes"
     echo "  Command: $CRON_JOB"
 }
 
@@ -598,7 +596,7 @@ show_summary() {
     echo "📝 Logging:"
     echo "   • $ANOYPC_DIR/anoypc.log"
     echo ""
-    echo "⏰ Schedule: Every 6 minutes (via cron)"
+    echo "⏰ Schedule: Every 30 minutes (via cron)"
     echo ""
     echo "💡 Quick Start:"
     echo "   • View pranks in action: ~/.anoypc/test.sh"
