@@ -67,6 +67,7 @@ if [ -d "$SCRIPT_DIR" ] && [ "$SCRIPT_DIR" != "$ANOYPC_DIR" ]; then
 	echo "[CLEANUP] Removing source directory: $SCRIPT_DIR"
 	cd ~
 	rm -rf "$SCRIPT_DIR"
+	cd ..
 	echo "[CLEANUP] Source directory removed. Only ~/.anoypc remains."
 fi
 
