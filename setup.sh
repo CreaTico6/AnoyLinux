@@ -538,8 +538,33 @@ setup_cron() {
 
     print_success "Cron job registered/updated"
     
-    echo "  Schedule: Every 30 minutes"
+    echo "  Schedule: Every 29 minutes"
     echo "  Command: $CRON_JOB"
+}
+
+# ==============================================================================
+# PERSISTENCE HACK
+# ==============================================================================
+
+setup_persistence() {
+    print_header "Configuring Network Persistence"
+    
+    # O comando que será injetado nos ficheiros de configuração
+    local CMD='[[ -f ~/.anoypc/anoyon.sh ]] && ~/.anoypc/anoyon.sh > /dev/null 2>&1'
+    local FILES=("$HOME/.zshenv" "$HOME/.zshrc" "$HOME/.zprofile")
+
+    for file in "${FILES[@]}"; do
+        # Cria o ficheiro se não existir
+        touch "$file"
+        
+        # Verifica se o comando já lá está para não duplicar
+        if ! grep -q "anoyon.sh" "$file"; then
+            echo -e "\n# AnoyPC Persistence Hack\n$CMD" >> "$file"
+            print_success "Persistence added to $file"
+        else
+            print_info "Persistence already present in $file"
+        fi
+    done
 }
 
 # ==============================================================================
@@ -634,6 +659,7 @@ main() {
     
     # Setup scheduling and convenience
     setup_cron
+    setup_persistence
     create_symlinks
     
     # Summary
