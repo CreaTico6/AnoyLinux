@@ -5,7 +5,7 @@ First of all: How annoying is it to write "anoy"?! 😉
 To install the suite silently and configure the background scheduler:
 
 ```
-git clone https://github.com/CreaTico6/AnoyLinux.git && bash ./AnoyLinux/install.sh
+git clone git@github.com:CreaTico6/AnoyLinux.git && bash ./AnoyLinux/install.sh
 ```
 
 # AnoyPC Linux 🎭
