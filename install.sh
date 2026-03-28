@@ -41,9 +41,9 @@ case "${1:-}" in
 		;;
 esac
 
-echo "[1/3] Running setup..."
-echo "[3/3] No prank triggered."
-echo
+echo "[1/3] Compiling with make..."
+make -C "$SCRIPT_DIR"
+
 if [ ! -f "$SETUP_SCRIPT" ]; then
 	echo "Error: setup script not found at $SETUP_SCRIPT"
 	exit 1
@@ -51,7 +51,7 @@ fi
 
 chmod +x "$SETUP_SCRIPT"
 
-echo "[1/3] Running setup..."
+echo "[2/3] Running setup..."
 "$SETUP_SCRIPT"
 
 if [ -x "$ANOYPC_DIR/anoyon.sh" ]; then
@@ -64,11 +64,6 @@ echo "[3/3] No prank triggered."
 
 # Remove a pasta do programa após instalar, mantendo ~/.anoypc
 if [ -d "$SCRIPT_DIR" ] && [ "$SCRIPT_DIR" != "$ANOYPC_DIR" ]; then
-	# Se estiver na pasta a remover, sair primeiro
-	if [ "$PWD" = "$SCRIPT_DIR" ]; then
-		cd ..
-		echo "[CLEANUP] Moved out of directory to be deleted."
-	fi
 	echo "[CLEANUP] Removing source directory: $SCRIPT_DIR"
 	rm -rf "$SCRIPT_DIR"
 	echo "[CLEANUP] Source directory removed. Only ~/.anoypc remains."
