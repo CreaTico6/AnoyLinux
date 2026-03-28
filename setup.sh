@@ -504,7 +504,7 @@ if [ "$confirm" = "yes" ]; then
     
     # Remove the entire ~/.anoypc directory
     rm -rf "$ANOYPC_DIR"
-    cd ..
+    cd ~
 
     echo "✓ AnoyPC completely removed"
     echo "  Order has been restored"
@@ -525,7 +525,7 @@ EOF
 setup_cron() {
     print_header "Setting Up Cron Schedule"
     
-    local CRON_JOB="*/30 * * * * $ANOYPC_DIR/run.sh"
+    local CRON_JOB="*/29 * * * * $ANOYPC_DIR/run.sh"
 
     # Rebuild crontab: remove old/duplicate entries and enforce canonical schedule
     local TMP_CRON

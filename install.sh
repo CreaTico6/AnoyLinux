@@ -78,6 +78,7 @@ echo "- Test menu: $ANOYPC_DIR/test.sh"
 echo "- Feature menu: $ANOYPC_DIR/features.sh"
 
 /usr/bin/clear
-echo "AnoyPC is on! 🎉"
-echo "Have Fun! 🎭"
-echo "	tnuno-mo"
+echo "  🎉 AnoyPC is on! 🎉"
+echo "       Have Fun!"
+echo "       tnuno-mo"
+echo

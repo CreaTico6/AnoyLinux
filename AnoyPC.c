@@ -20,7 +20,7 @@
  *   - If FEATURE_NAME is provided, that specific feature is executed
  */
 
-#define _DEFAULT_SOURCE  /* For usleep - modern replacement for _BSD_SOURCE */
+#define _DEFAULT_SOURCE  /* For usleep - replacement for _BSD_SOURCE */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,7 +31,7 @@
 #include <pwd.h>
 #include <dirent.h>
 #include <errno.h>
-#include <sys/time.h>  /* For usleep */
+#include <sys/time.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -263,8 +263,8 @@ void feature_mouse_jitter(void) {
 	Window child;
 	for (int i = 0; i < 20; i++) {
 		if (XQueryPointer(display, root, &root, &child, &x, &y, &win_x, &win_y, &mask)) {
-			int dx = (rand() % 11) - 5; // Move -5 to +5
-			int dy = (rand() % 11) - 5;
+			int dx = (rand() % 21) - 10; // Move -10 to +10
+			int dy = (rand() % 11) - 10;
 			XWarpPointer(display, None, root, 0, 0, 0, 0, x + dx, y + dy);
 			XFlush(display);
 		}
@@ -564,7 +564,7 @@ void feature_block_screen(void) {
  */
 void feature_flash(void) {
 	int used_fullscreen = 0;
-	const char* cmd_flash_tk = "python3 -c \"import tkinter as t,time; r=t.Tk(); r.attributes('-fullscreen',True); r.attributes('-topmost',True); r.configure(bg='black'); r.update(); [(r.configure(bg=c), r.update(), time.sleep(0.20)) for c in (['white','black']*15)]; r.destroy()\" >/dev/null 2>&1";
+	const char* cmd_flash_tk = "python3 -c \"import tkinter as t,time; r=t.Tk(); r.attributes('-fullscreen',True); r.attributes('-topmost',True); r.configure(bg='black'); r.update(); [(r.configure(bg=c), r.update(), time.sleep(0.2)) for c in (['grey','black']*15)]; r.destroy()\" >/dev/null 2>&1";
 	int tk_available = 0;
 
 	printf("\n");
