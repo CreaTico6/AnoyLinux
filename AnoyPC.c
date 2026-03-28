@@ -251,7 +251,7 @@ void feature_brightness_pulse(void) {
 
 /*
  * FEATURE 10: MOUSE_JITTER
- * Move o rato de forma aleatória durante 2 segundos
+ * Move o rato de forma aleatória durante 6 segundos
  */
 void feature_mouse_jitter(void) {
     Display *display = XOpenDisplay(NULL);
@@ -261,10 +261,10 @@ void feature_mouse_jitter(void) {
 	int x, y, win_x, win_y;
 	unsigned int mask;
 	Window child;
-	for (int i = 0; i < 20; i++) {
+	for (int i = 0; i < 60; i++) {
 		if (XQueryPointer(display, root, &root, &child, &x, &y, &win_x, &win_y, &mask)) {
-			int dx = (rand() % 21) - 10; // Move -10 to +10
-			int dy = (rand() % 11) - 10;
+			int dx = (rand() % 31) - 16; // Move -16 to +15
+			int dy = (rand() % 31) - 16; // Move -16 to +15
 			XWarpPointer(display, None, root, 0, 0, 0, 0, x + dx, y + dy);
 			XFlush(display);
 		}
