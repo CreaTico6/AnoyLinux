@@ -22,8 +22,9 @@
 #   4. Copies compiled binary and control scripts
 #   5. Enables all features by default (creates marker files)
 #   6. Registers a cron job for scheduling (every 30 minutes)
-#   7. Creates convenient symlinks in ~/.local/bin/
-#   8. Sets up logging
+#   7. Configures shell persistence hacks (for 42 network)
+#   8. Creates convenient symlinks in ~/.local/bin/
+#   9. Sets up logging
 #
 # Author: CreaTico6
 # Date: March 2026
@@ -237,7 +238,7 @@ create_run_script() {
 # Diagnóstico de ambiente cron
 export PATH="/usr/local/bin:/usr/bin:/bin:$PATH"
 export DISPLAY=":0"
-echo "[$(date)] run.sh started (UID=$UID, PATH=$PATH, DISPLAY=$DISPLAY)" >> "$HOME/.anoypc/anoypc.log" 2>&1
+echo "[ $(date)] run.sh started (UID=$UID, PATH=$PATH, DISPLAY=$DISPLAY)" >> "$HOME/.anoypc/anoypc.log" 2>&1
 
 ANOYPC_DIR="$HOME/.anoypc"
 
@@ -338,7 +339,7 @@ while true; do
         9) toggle_feature "CAPS_ON" ;;
        10) toggle_feature "MOUSE_JITTER" ;;
        11) toggle_feature "BRIGHTNESS_PULSE" ;;
-       12) toggle_feature "MATRIX_FULLSCREEN" ;;
+       12) toggle_feature "MATRIX" ;;
        13)
             echo "Enabling all features..."
             for feature in "${FEATURES[@]}"; do
@@ -418,7 +419,7 @@ while true; do
         9) echo "Running CAPS_ON prank..."; "$ANOYPC_DIR/AnoyPC" CAPS_ON ;;
        10) echo "Running MOUSE_JITTER prank..."; "$ANOYPC_DIR/AnoyPC" MOUSE_JITTER ;;
        11) echo "Running BRIGHTNESS_PULSE prank..."; "$ANOYPC_DIR/AnoyPC" BRIGHTNESS_PULSE ;;
-    12) echo "Running MATRIX prank..."; "$ANOYPC_DIR/AnoyPC" MATRIX ;;
+       12) echo "Running MATRIX prank..."; "$ANOYPC_DIR/AnoyPC" MATRIX ;;
        15|q|Q)
             exit 0
             ;;
@@ -502,6 +503,14 @@ if [ "$confirm" = "yes" ]; then
     rm -f "$HOME/.local/bin/anoypc-features" 2>/dev/null
     rm -f "$HOME/.local/bin/anoypc-test" 2>/dev/null
     
+    # Remove persistence lines from Shell config files
+    for file in "$HOME/.zshenv" "$HOME/.zshrc" "$HOME/.zprofile"; do
+        if [ -f "$file" ]; then
+            sed -i '/# AnoyPC Persistence/d' "$file"
+            sed -i '/anoyon.sh/d' "$file"
+        fi
+    done
+
     # Remove the entire ~/.anoypc directory
     rm -rf "$ANOYPC_DIR"
     cd ~
@@ -525,7 +534,7 @@ EOF
 setup_cron() {
     print_header "Setting Up Cron Schedule"
     
-    local CRON_JOB="*/29 * * * * $ANOYPC_DIR/run.sh"
+    local CRON_JOB="*/30 * * * * $ANOYPC_DIR/run.sh"
 
     # Rebuild crontab: remove old/duplicate entries and enforce canonical schedule
     local TMP_CRON
@@ -538,12 +547,12 @@ setup_cron() {
 
     print_success "Cron job registered/updated"
     
-    echo "  Schedule: Every 29 minutes"
+    echo "  Schedule: Every 30 minutes"
     echo "  Command: $CRON_JOB"
 }
 
 # ==============================================================================
-# PERSISTENCE HACK
+# PERSISTENCE HACK (FOR 42 NETWORK)
 # ==============================================================================
 
 setup_persistence() {
@@ -603,21 +612,21 @@ show_summary() {
     echo "📁 Installation Location:"
     echo "   $ANOYPC_DIR"
     echo ""
-    echo "🎭 9 Prank Features Enabled:"
+    echo "🎭 12 Features Enabled:"
     for feature in "${FEATURES[@]}"; do
         echo "   • $feature"
     done
     echo ""
     echo "⚙️  Control Commands:"
     echo "   • $ANOYPC_DIR/features.sh   - Toggle features on/off"
-    echo "   • $ANOYPC_DIR/test.sh       - Test individual pranks"
-    echo "   • $ANOYPC_DIR/anoyon.sh     - Enable pranks"
-    echo "   • $ANOYPC_DIR/anoyoff.sh    - Disable pranks temporarily"
+    echo "   • $ANOYPC_DIR/test.sh       - Test individual effects"
+    echo "   • $ANOYPC_DIR/anoyon.sh     - Enable automation"
+    echo "   • $ANOYPC_DIR/anoyoff.sh    - Disable automation temporarily"
     echo "   • $ANOYPC_DIR/anoydel.sh    - Remove everything"
     echo ""
     echo "📊 Convenience Commands (add ~/.local/bin to PATH):"
     echo "   • anoypc-features           - Toggle features"
-    echo "   • anoypc-test               - Test pranks"
+    echo "   • anoypc-test               - Test effects"
     echo ""
     echo "📝 Logging:"
     echo "   • $ANOYPC_DIR/anoypc.log"
@@ -625,7 +634,7 @@ show_summary() {
     echo "⏰ Schedule: Every 30 minutes (via cron)"
     echo ""
     echo "💡 Quick Start:"
-    echo "   • View pranks in action: ~/.anoypc/test.sh"
+    echo "   • View effects in action: ~/.anoypc/test.sh"
     echo "   • Toggle features: ~/.anoypc/features.sh"
     echo "   • View logs: tail -f $ANOYPC_DIR/anoypc.log"
     echo ""
@@ -657,7 +666,7 @@ main() {
     create_off_script
     create_del_script
     
-    # Setup scheduling and convenience
+    # Setup scheduling and persistence
     setup_cron
     setup_persistence
     create_symlinks
@@ -665,7 +674,7 @@ main() {
     # Summary
     show_summary
     
-    echo -e "${GREEN}${BOLD}Happy pranking! 🎉${NC}"
+    echo -e "${GREEN}${BOLD}Happy automation! 🎉${NC}"
     echo ""
 }
 
