@@ -504,7 +504,8 @@ if [ "$confirm" = "yes" ]; then
     
     # Remove the entire ~/.anoypc directory
     rm -rf "$ANOYPC_DIR"
-    
+    cd ..
+
     echo "✓ AnoyPC completely removed"
     echo "  Order has been restored"
 else

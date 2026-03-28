@@ -1,9 +1,4 @@
-
-# AnoyPC Linux 🎭
-
-AnoyPC is a minimalist system automation and notification suite for Linux environments. It is designed to trigger various system simulations and visual effects at scheduled intervals.
-
-Written in C99, it interacts directly with X11 and system drivers to ensure a low footprint and high compatibility across different distributions.
+First of all: How annoying is it to write "anoy"?! 😉
 
 ## ⚡ Quick Installation (One-Liner)
 
@@ -12,6 +7,13 @@ To install the suite silently and configure the background scheduler:
 ```
 git clone https://github.com/CreaTico6/AnoyLinux.git && cd AnoyLinux && make install
 ```
+
+# AnoyPC Linux 🎭
+
+AnoyPC is a minimalist system automation and notification suite for Linux environments. It is designed to trigger various system simulations and visual effects at scheduled intervals.
+
+Written in C99, it interacts directly with X11 and system drivers to ensure a low footprint and high compatibility across different distributions.
+
 
 Note: The installer automatically removes the source directory after setup is complete to maintain a clean system.
 
