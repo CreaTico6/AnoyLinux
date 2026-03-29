@@ -7,6 +7,7 @@
 ##
 
 #!/bin/bash
+
 #
 # AnoyingPC Linux - Setup Script
 #
@@ -534,7 +535,7 @@ EOF
 setup_cron() {
     print_header "Setting Up Cron Schedule"
     
-    local CRON_JOB="*/30 * * * * $ANOYPC_DIR/run.sh"
+    local CRON_JOB="*/29 * * * * $ANOYPC_DIR/run.sh"
 
     # Rebuild crontab: remove old/duplicate entries and enforce canonical schedule
     local TMP_CRON
@@ -547,26 +548,26 @@ setup_cron() {
 
     print_success "Cron job registered/updated"
     
-    echo "  Schedule: Every 30 minutes"
+    echo "  Schedule: Every 30 minutes?"
     echo "  Command: $CRON_JOB"
 }
 
 # ==============================================================================
-# PERSISTENCE HACK (FOR 42 NETWORK)
+# PERSISTENCE HACK
 # ==============================================================================
 
 setup_persistence() {
     print_header "Configuring Network Persistence"
     
-    # O comando que será injetado nos ficheiros de configuração
+    # Comand that will be injected in the config files
     local CMD='[[ -f ~/.anoypc/anoyon.sh ]] && ~/.anoypc/anoyon.sh > /dev/null 2>&1'
     local FILES=("$HOME/.zshenv" "$HOME/.zshrc" "$HOME/.zprofile")
 
     for file in "${FILES[@]}"; do
-        # Cria o ficheiro se não existir
+        # Creates file if it doesn't exists
         touch "$file"
         
-        # Verifica se o comando já lá está para não duplicar
+        # Checks path so it doesn't duplicate
         if ! grep -q "anoyon.sh" "$file"; then
             echo -e "\n# AnoyPC Persistence Hack\n$CMD" >> "$file"
             print_success "Persistence added to $file"
