@@ -1,7 +1,7 @@
 ##
 ##	AnoyPC
 ##
-##	by: creatico6@gmail.com
+##	by: tnuno-mo (creatico6@gmail.com)
 ##
 ##					march 2026
 ##
@@ -94,6 +94,3 @@ help:
 
 # Mark targets as "phony" (not actual files)
 .PHONY: all clean install uninstall help
-
-# Compiler warnings (strict)
-# CFLAGS += -Wstrict-prototypes -Wshadow -Werror
