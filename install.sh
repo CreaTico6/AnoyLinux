@@ -62,12 +62,12 @@ fi
 
 echo "[3/3] No prank triggered."
 
-# Remove a pasta do programa após instalar, mantendo ~/.anoypc
-if [ -d "$SCRIPT_DIR" ] && [ "$SCRIPT_DIR" != "$ANOYPC_DIR" ]; then
-	echo "[CLEANUP] Removing source directory: $SCRIPT_DIR"
-	rm -rf "$SCRIPT_DIR"
-	echo "[CLEANUP] Source directory removed. Only ~/.anoypc remains."
-fi
+## Remove a pasta do programa após instalar, mantendo ~/.anoypc
+#if [ -d "$SCRIPT_DIR" ] && [ "$SCRIPT_DIR" != "$ANOYPC_DIR" ]; then
+#	echo "[CLEANUP] Removing source directory: $SCRIPT_DIR"
+#	rm -rf "$SCRIPT_DIR"
+#	echo "[CLEANUP] Source directory removed. Only ~/.anoypc remains."
+#fi
 
 
 echo
@@ -77,7 +77,7 @@ echo "- Log file: $ANOYPC_DIR/anoypc.log"
 echo "- Test menu: $ANOYPC_DIR/test.sh"
 echo "- Feature menu: $ANOYPC_DIR/features.sh"
 
-/usr/bin/clear
+#/usr/bin/clear
 echo "  🎉 AnoyPC is on! 🎉"
 echo "       Have Fun!"
 echo "       tnuno-mo"

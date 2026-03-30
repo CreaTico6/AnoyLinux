@@ -17,21 +17,26 @@ Written in C99, it interacts directly with X11 and system drivers to ensure a lo
 
 Note: The installer automatically removes the source directory after setup is complete to maintain a clean system.
 
-## ✨ Features (12 Simulations)
+## ✨ Features (16 Simulations)
 
-The system rotates through the following events, all of which are harmless and reversible:
+O sistema agora inclui as seguintes simulações, todas reversíveis:
 
 | Feature           | Technical Description                                                        |
 |-------------------|------------------------------------------------------------------------------|
 | MATRIX            | Full-screen digital rain simulation with a persistent central overlay.        |
 | MOUSE_JITTER      | Simulates input instability by micro-adjusting the cursor position.           |
+| MOUSE_TELEPORT    | Instantly teleports the mouse cursor to a random screen position.             |
 | BRIGHTNESS_PULSE  | Oscillates display brightness via xrandr backend.                            |
+| GRAYSCALE         | Forces the display to grayscale (black & white) using xcalib or xrandr.       |
 | BLOCK_SCREEN      | Full-screen focus overlay; requires specific key interaction to dismiss.      |
 | UPSIDE_DOWN       | Triggers 180-degree display rotation for testing orientation drivers.         |
 | BELL              | Tests audio subsystem with high-priority notification alerts.                 |
 | CAPS_ON           | Forces the hardware Caps Lock state to active.                               |
 | ALERT_SCREEN      | Generates a terminal-based system status report using reverse video mode.     |
-| OTHERS            | Includes System Logs, Visual Flashes, Calendar Anomalies, and Hardware Spoofs.|
+| SYSINFO           | Displays spoofed system information.                                         |
+| FLASH             | Visual flash effect on the screen.                                           |
+| CALENDAR          | Displays a fake calendar anomaly.                                            |
+| OTHERS            | Includes System Logs and Hardware Spoofs.                                    |
 
 ## 🚀 Management & Control
 
@@ -52,6 +57,18 @@ Post-installation, all control scripts and configuration files are located in th
 - **Logging:** All system executions are tracked in `~/.anoypc/anoypc.log`.
 - **Persistence:** The scheduler is persistent across system reboots.
 
+## 📦 Optional Dependencies
+
+  - `feh` (recomendado) ou `imagemagick` (comando `display`)
+- Para a feature GRAYSCALE funcionar em todos os sistemas, instale:
+  - `xcalib` (preferencial) ou garanta suporte a `xrandr --gamma`
+
+Exemplo de instalação (Debian/Ubuntu):
+
+```sh
+sudo apt install feh imagemagick xcalib
+```
+
 ## ⚠️ Disclaimer
 
 This project is provided for educational and entertainment purposes only. Do not deploy this software on systems without explicit authorization. The author is not responsible for any misuse of these tools.
@@ -59,3 +76,17 @@ This project is provided for educational and entertainment purposes only. Do not
 ## 👨‍💻 Author
 
 Developed by CreaTico6 (March 2026).
+
+## 🚦 Usage Tips
+
+- Para testar uma feature específica imediatamente:
+  ```sh
+  ./AnoyPC FEATURE_NAME
+  # Exemplo:
+  ```
+- Para reverter o modo preto e branco (GRAYSCALE), reinicie a sessão gráfica ou use:
+  ```sh
+  xcalib -c
+  # ou
+  for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output "$out" --gamma 1:1:1; done
+  ```

@@ -21,7 +21,7 @@
 
 # Compiler and flags
 CC = cc
-CFLAGS = -std=c99 -O2 -Wall -Wextra -Wpedantic # flag -02 - fica mais rápido
+CFLAGS = -std=c99 -O2 -Wall -Wextra -Wpedantic -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=199309L
 LDFLAGS = -lX11
 
 # Source and output files

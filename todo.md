@@ -1,0 +1,10 @@
+- trocar o rato para mão esquerda
+- fazer com que o as pastas / icones fujam do rato!
+- criar um botão "click me to exit" que foje ao rato!
+- Clicar no botão "windows" de vez enquando
+- mudar o cursor para um cursor de rato gigante ou outro cursor engraçado
+- fazer com que o rato largue "cócós" de vez enquando pelo ecrã
+- desligar o clique do rato
+- Há um equivalente ao "Net Send" do windows para Linux?
+- criar um script que faça o terminal abrir e fechar sozinho, mas com uma mensagem engraçada
+-

@@ -1,3 +1,71 @@
+// Includes padrão necessários para funções do sistema, tempo e variáveis de ambiente
+#include <stdio.h>
+#include <stdlib.h>   // getenv, system, rand
+#include <unistd.h>   // sleep, usleep
+#include <time.h>     // time, struct timespec
+#include <string.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <dirent.h>
+#include <errno.h>
+#include <signal.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/keysym.h>
+#include <X11/XKBlib.h>
+#include <X11/extensions/Xrender.h>
+
+/* Forward declaration for utility function */
+static void run_command_best_effort(const char* cmd);
+
+/*
+ * FEATURE: BROKEN_SCREEN
+ * Bloqueia o ecrã com uma imagem de ecrã partido (overlay fullscreen)
+ * Requer imagem PNG chamada "broken_screen.png" no diretório atual
+ */
+void feature_broken_screen(void) {
+	/* Feature anulada */
+	return;
+}
+
+/*
+ * FEATURE: GRAYSCALE
+ * Torna o ecrã preto e branco usando xrandr (gamma) ou xcalib
+ */
+void feature_grayscale(void) {
+	// Tenta xcalib se disponível, senão xrandr (gamma)
+	int used_xcalib = 0;
+	if (system("command -v xcalib >/dev/null 2>&1") == 0) {
+		run_command_best_effort("xcalib -alter -blue 1 0 0 -red 1 0 0 -green 1 0 0");
+		used_xcalib = 1;
+	} else if (system("command -v xrandr >/dev/null 2>&1") == 0) {
+		run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --gamma 0.33:0.33:0.33 >/dev/null 2>&1; done");
+	}
+	sleep(8);
+	// Reverter para o normal
+	if (used_xcalib) {
+		run_command_best_effort("xcalib -c");
+	} else if (system("command -v xrandr >/dev/null 2>&1") == 0) {
+		run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --gamma 1:1:1 >/dev/null 2>&1; done");
+	}
+}
+/*
+ * FEATURE: MOUSE_TELEPORT
+ * Teleporta o cursor do rato para uma posição aleatória no ecrã
+ */
+void feature_mouse_teleport(void) {
+	Display *display = XOpenDisplay(NULL);
+	if (display == NULL) return;
+	int screen = DefaultScreen(display);
+	Window root = RootWindow(display, screen);
+	int width = DisplayWidth(display, screen);
+	int height = DisplayHeight(display, screen);
+	int x = rand() % width;
+	int y = rand() % height;
+	XWarpPointer(display, None, root, 0, 0, 0, 0, x, y);
+	XFlush(display);
+	XCloseDisplay(display);
+}
 //
 //	AnoyPC
 //
@@ -19,8 +87,6 @@
  *   - If FEATURE_NAME is omitted, a random enabled feature is selected
  *   - If FEATURE_NAME is provided, that specific feature is executed
  */
-
-#define _DEFAULT_SOURCE  /* For usleep - replacement for _BSD_SOURCE */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,8 +138,9 @@ typedef enum {
 	FEAT_UPSIDE_DOWN,		/* 8. Upside Down */
 	FEAT_CAPS_ON,			/* 9. CAPS ON */
 	FEAT_MOUSE_JITTER,		/* 10. Mouse Jitter */
-	FEAT_BRIGHTNESS_PULSE,	/* 11. Brightness Pulse */
-	FEAT_MATRIX,			/* 12. Matrix */
+	FEAT_MOUSE_TELEPORT,	/* 11. Mouse Teleport */
+	FEAT_BRIGHTNESS_PULSE,	/* 12. Brightness Pulse */
+ 	FEAT_MATRIX,            /* 14. Matrix */
 	FEAT_COUNT
 } Feature;
 
@@ -89,8 +156,11 @@ static const char* FEATURE_NAMES[] = {
 	"UPSIDE_DOWN",
 	"CAPS_ON",
 	"MOUSE_JITTER",
+	"MOUSE_TELEPORT",
 	"BRIGHTNESS_PULSE",
-	"MATRIX"
+ 	"BROKEN_SCREEN",
+ 	"MATRIX",
+	"COUNT"
 };
 /*
  * FEATURE 12: MATRIX
@@ -798,6 +868,12 @@ void run_feature(const char* feature_name) {
 		feature_keyboard_swap();
 	} else if (strcmp(upper_name, "MOUSE_JITTER") == 0) {
 		feature_mouse_jitter();
+	} else if (strcmp(upper_name, "MOUSE_TELEPORT") == 0) {
+		feature_mouse_teleport();
+	} else if (strcmp(upper_name, "GRAYSCALE") == 0) {
+		feature_grayscale();
+	} else if (strcmp(upper_name, "BROKEN_SCREEN") == 0) {
+		feature_broken_screen();
 	} else if (strcmp(upper_name, "BRIGHTNESS_PULSE") == 0) {
 		feature_brightness_pulse();
 	} else if (strcmp(upper_name, "MATRIX") == 0) {

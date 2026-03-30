@@ -62,7 +62,9 @@ FEATURES=(
     "UPSIDE_DOWN"
     "CAPS_ON"
     "MOUSE_JITTER"
+    "MOUSE_TELEPORT"
     "BRIGHTNESS_PULSE"
+    "GRAYSCALE"
     "MATRIX"
 )
 
@@ -277,7 +279,9 @@ FEATURES=(
     "UPSIDE_DOWN"
     "CAPS_ON"
     "MOUSE_JITTER"
+    "MOUSE_TELEPORT"
     "BRIGHTNESS_PULSE"
+    "GRAYSCALE"
     "MATRIX"
 )
 
@@ -339,9 +343,11 @@ while true; do
         8) toggle_feature "UPSIDE_DOWN" ;;
         9) toggle_feature "CAPS_ON" ;;
        10) toggle_feature "MOUSE_JITTER" ;;
-       11) toggle_feature "BRIGHTNESS_PULSE" ;;
-       12) toggle_feature "MATRIX" ;;
-       13)
+       11) toggle_feature "MOUSE_TELEPORT" ;;
+       13) toggle_feature "BRIGHTNESS_PULSE" ;;
+       14) toggle_feature "GRAYSCALE" ;;
+       16) toggle_feature "MATRIX" ;;
+       17)
             echo "Enabling all features..."
             for feature in "${FEATURES[@]}"; do
                 touch "$ANOYPC_DIR/feat_$feature.on"
@@ -349,7 +355,7 @@ while true; do
             echo "✓ All features enabled"
             sleep 1
             ;;
-       14)
+       18)
             echo "Disabling all features..."
             for feature in "${FEATURES[@]}"; do
                 rm -f "$ANOYPC_DIR/feat_$feature.on"
@@ -357,7 +363,7 @@ while true; do
             echo "✓ All features disabled"
             sleep 1
             ;;
-       15|q|Q)
+       19|q|Q)
             exit 0
             ;;
         *)
@@ -382,6 +388,23 @@ create_test_script() {
 
 ANOYPC_DIR="$HOME/.anoypc"
 
+FEATURES=(
+    "BELL"
+    "MESSAGE"
+    "BLOCK_SCREEN"
+    "FLASH"
+    "ALERT_SCREEN"
+    "CALENDAR"
+    "SYSINFO"
+    "UPSIDE_DOWN"
+    "CAPS_ON"
+    "MOUSE_JITTER"
+    "MOUSE_TELEPORT"
+    "BRIGHTNESS_PULSE"
+    "GRAYSCALE"
+    "MATRIX"
+)
+
 # Main menu loop
 while true; do
     clear
@@ -391,44 +414,24 @@ while true; do
     echo ""
     echo "  Run a specific prank immediately for testing:"
     echo ""
-    echo "  1. Terminal Bell"
-    echo "  2. Random Message"
-    echo "  3. Block Screen"
-    echo "  4. Screen Flash"
-    echo "  5. Alert Screen"
-    echo "  6. Calendar Joke"
-    echo "  7. System Info Spoof"
-    echo "  8. Upside Down (42s)"
-    echo "  9. CAPS ON"
-    echo " 10. Mouse Jitter"
-    echo " 11. Brightness Pulse"
-    echo " 12. Matrix"
+    for i in "${!FEATURES[@]}"; do
+        printf "  %2d. %s\n" "$((i+1))" "${FEATURES[$i]}"
+    done
     echo "  q. Exit"
     echo ""
 
-    read -p "Choose (1-12 or q): " choice
+    read -p "Choose (1-${#FEATURES[@]} or q): " choice
 
-    case $choice in
-        1) echo "Running BELL prank..."; "$ANOYPC_DIR/AnoyPC" BELL ;;
-        2) echo "Running MESSAGE prank..."; "$ANOYPC_DIR/AnoyPC" MESSAGE ;;
-        3) echo "Running BLOCK_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" BLOCK_SCREEN ;;
-        4) echo "Flashing!"; "$ANOYPC_DIR/AnoyPC" FLASH ;;
-        5) echo "Running ALERT_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" ALERT_SCREEN ;;
-        6) echo "Running CALENDAR prank..."; "$ANOYPC_DIR/AnoyPC" CALENDAR ;;
-        7) echo "Running SYSINFO prank..."; "$ANOYPC_DIR/AnoyPC" SYSINFO ;;
-        8) echo "Running UPSIDE_DOWN prank (42s)..."; "$ANOYPC_DIR/AnoyPC" UPSIDE_DOWN ;;
-        9) echo "Running CAPS_ON prank..."; "$ANOYPC_DIR/AnoyPC" CAPS_ON ;;
-       10) echo "Running MOUSE_JITTER prank..."; "$ANOYPC_DIR/AnoyPC" MOUSE_JITTER ;;
-       11) echo "Running BRIGHTNESS_PULSE prank..."; "$ANOYPC_DIR/AnoyPC" BRIGHTNESS_PULSE ;;
-       12) echo "Running MATRIX prank..."; "$ANOYPC_DIR/AnoyPC" MATRIX ;;
-       15|q|Q)
-            exit 0
-            ;;
-        *)
-            echo "Invalid choice"
-            sleep 1
-            ;;
-    esac
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#FEATURES[@]} )); then
+        idx=$((choice-1))
+        echo "Running \\"${FEATURES[$idx]}\\" prank..."
+        "$ANOYPC_DIR/AnoyPC" "${FEATURES[$idx]}"
+    elif [[ "$choice" =~ ^[qQ]$ ]]; then
+        exit 0
+    else
+        echo "Invalid choice"
+        sleep 1
+    fi
 
     echo ""
     read -p "Press Enter to continue..."
