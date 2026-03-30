@@ -1,149 +1,88 @@
-First of all: How annoying is it to write "anoy"?! 😉
 
-⚡ Quick Installation (One-Liner)
+# 🎭 AnoyPC Linux
 
-To install the suite silently and configure the background scheduler:
+> **AnoyPC** é uma suíte minimalista de automação e notificações para sistemas Linux, projetada para simular eventos e efeitos visuais de forma imprevisível e reversível.
 
+---
+
+## ⚡ Instalação Rápida
+
+```bash
 git clone git@github.com:CreaTico6/AnoyLinux.git && bash ./AnoyLinux/install.sh
+```
+> O instalador remove automaticamente o diretório fonte após a configuração.
 
+---
 
-AnoyPC Linux 🎭
+## ✨ Funcionalidades (20 Simulações)
 
-AnoyPC is a minimalist system automation and notification suite for Linux environments. It is designed to trigger various system simulations and visual effects at scheduled, unpredictable intervals.
+Todas as simulações são reversíveis e seguras:
 
-Written in C99, it interacts directly with X11 and system drivers to ensure a low footprint and high compatibility across different distributions.
+| Nome            | Descrição Técnica |
+|-----------------|------------------|
+| **MATRIX**      | Chuva digital em tela cheia com overlay central. |
+| **MOUSE_JITTER**| Micro-ajustes aleatórios no cursor. |
+| **MOUSE_TELEPORT** | Teleporta o cursor para posição aleatória. |
+| **MOUSE_SWAP**  | Inverte botões esquerdo/direito do mouse. |
+| **MOUSE_POOP**  | Deixa rastros de quadrados pretos temporários. |
+| **CHASING_BUTTON** | Janela X11 que foge do cursor. |
+| **CLICK_DISABLE** | Desativa cliques físicos temporariamente. |
+| **CUSTOM_CURSOR** | Altera o cursor para ícones bizarros. |
+| **BRIGHTNESS_PULSE** | Oscila o brilho da tela via xrandr. |
+| **GRAYSCALE**   | Força escala de cinza via xcalib/xrandr. |
+| **TERMINAL_LOOP** | Abre terminal, mostra aviso falso e fecha. |
+| **BLOCK_SCREEN** | Overlay de foco em tela cheia. |
+| **UPSIDE_DOWN** | Rotaciona a tela em 180°. |
+| **BELL**        | Testa alertas de áudio. |
+| **CAPS_ON**     | Ativa Caps Lock. |
+| **ALERT_SCREEN** | Relatório de status no terminal. |
+| **SYSINFO**     | Mostra informações falsas do sistema. |
+| **FLASH**       | Efeito de flash visual. |
+| **CALENDAR**    | Exibe anomalia falsa de calendário. |
+| **MESSAGE**     | Mensagens falsas de kernel/dmesg. |
 
-Note: The installer automatically removes the source directory after setup is complete to maintain a clean system.
+---
 
-✨ Features (20 Simulations)
+## 🚀 Gerenciamento & Controle
 
-O sistema inclui as seguintes simulações, todas perfeitamente reversíveis:
+Scripts e arquivos de configuração ficam em `~/.anoypc/`:
 
-Feature
+- `~/.local/bin/anoypc-features`: Menu interativo para ativar/desativar eventos.
+- `~/.local/bin/anoypc-test`: Testa eventos individualmente.
+- `~/.anoypc/anoyoff.sh`: Suspende o agendador (cron).
+- `~/.anoypc/anoyon.sh`: Retoma o agendamento.
+- `~/.anoypc/anoydel.sh`: Desinstala completamente a suíte.
 
-Technical Description
+---
 
-MATRIX
+## 🔧 Visão Técnica
 
-Full-screen digital rain simulation with a persistent central overlay.
+- **Arquitetura:** C99 + X11 (Xlib)
+- **Agendamento:** Cron padrão, intervalos imprevisíveis (Stealth Mode)
+- **Logs:** `~/.anoypc/anoypc.log`
+- **Persistência:** Injeção em `.zshenv`/`.zprofile`
 
-MOUSE_JITTER
+---
 
-Simulates input instability by micro-adjusting the cursor position.
+## 📦 Dependências Opcionais
 
-MOUSE_TELEPORT
+Para a feature **GRAYSCALE** funcionar em todos os sistemas, instale:
 
-Instantly teleports the mouse cursor to a random screen position.
-
-MOUSE_SWAP
-
-Swaps left and right mouse buttons mapping temporarily.
-
-MOUSE_POOP
-
-Leaves a trail of small, temporary black squares behind the mouse cursor.
-
-CHASING_BUTTON
-
-Spawns a native X11 window that evades the user's cursor.
-
-CLICK_DISABLE
-
-Temporarily disables physical mouse clicks (maps buttons to 0).
-
-CUSTOM_CURSOR
-
-Randomly changes the system cursor to a bizarre icon (skull, spider, etc).
-
-BRIGHTNESS_PULSE
-
-Oscillates display brightness via xrandr backend.
-
-GRAYSCALE
-
-Forces the display to grayscale (black & white) using xcalib or xrandr.
-
-TERMINAL_LOOP
-
-Opens a terminal emulator, types a fake warning, and auto-closes.
-
-BLOCK_SCREEN
-
-Full-screen focus overlay; requires specific key interaction to dismiss.
-
-UPSIDE_DOWN
-
-Triggers 180-degree display rotation for testing orientation drivers.
-
-BELL
-
-Tests audio subsystem with high-priority notification alerts.
-
-CAPS_ON
-
-Forces the hardware Caps Lock state to active.
-
-ALERT_SCREEN
-
-Generates a terminal-based system status report using reverse video mode.
-
-SYSINFO
-
-Displays spoofed system information.
-
-FLASH
-
-Visual flash effect on the screen.
-
-CALENDAR
-
-Displays a fake calendar anomaly.
-
-MESSAGE
-
-Prints realistic but fake system kernel/dmesg warnings.
-
-🚀 Management & Control
-
-Post-installation, all control scripts and configuration files are located in the hidden directory ~/.anoypc/.
-
-Operation Scripts:
-
-~/.local/bin/anoypc-features: Interactive menu to toggle specific events ON or OFF.
-
-~/.local/bin/anoypc-test: Utility to trigger any event immediately for verification.
-
-~/.anoypc/anoyoff.sh: Suspends the background scheduler (deactivates cron).
-
-~/.anoypc/anoyon.sh: Resumes the automated schedule.
-
-~/.anoypc/anoydel.sh: Completely uninstalls the suite, logs, and schedules.
-
-🔧 Technical Overview
-
-Architecture: C99 binary with X11 (Xlib) integration.
-
-Scheduling: Standard Cron daemon, configured for unpredictable intervals (Stealth Mode).
-
-Logging: All system executions are tracked in ~/.anoypc/anoypc.log.
-
-Persistence: Uses .zshenv/.zprofile injection.
-
-📦 Optional Dependencies
-
-Para a feature GRAYSCALE funcionar em todos os sistemas, é recomendado instalar:
-
-xcalib (preferencial) ou garanta suporte a xrandr --gamma
-
-Exemplo de instalação (Sistemas baseados em Debian):
-
+```bash
 sudo apt install xcalib
+```
+Ou garanta suporte a `xrandr --gamma`.
+
+---
+
+## ⚠️ Aviso Legal
+
+> Projeto para fins educacionais e de teste. Não utilize sem autorização explícita. O autor não se responsabiliza por uso indevido.
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por **tnuno-mo** (Março 2026).
 
 
-⚠️ Disclaimer
-
-This project is provided for educational and system-testing purposes only. Do not deploy this software on systems without explicit authorization. The author is not responsible for any misuse of these tools.
-
-👨‍💻 Author
-
-Developed by tnuno-mo (March 2026).
