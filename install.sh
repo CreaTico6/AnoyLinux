@@ -1,13 +1,11 @@
+#!/bin/bash
 ##
 ##	AnoyPC
 ##
-##	by: creatico6@gmail.com
+##	by: tnuno-mo (creatico6@gmail.com)
 ##
 ##					march 2026
 ##
-
-
-#!/bin/bash
 
 set -euo pipefail
 
@@ -22,7 +20,7 @@ Usage: ./install.sh
 What it does:
 	1) Runs setup.sh (compile + install + cron configuration)
 	2) Ensures cron is enabled via ~/.anoypc/anoyon.sh
-	3) Does NOT trigger any prank immediately
+	3) Does NOT trigger any event immediately
 EOF
 }
 
@@ -60,7 +58,7 @@ if [ -x "$ANOYPC_DIR/anoyon.sh" ]; then
 fi
 
 
-echo "[3/3] No prank triggered."
+echo "[3/3] No event triggered."
 
 # Remove a pasta do programa após instalar, mantendo ~/.anoypc
 if [ -d "$SCRIPT_DIR" ] && [ "$SCRIPT_DIR" != "$ANOYPC_DIR" ]; then
@@ -72,13 +70,13 @@ fi
 
 echo
 echo "Done. AnoyPC is installed and running."
-echo "- Scheduler: every 30 minutes"
+echo "- Scheduler: Active (Stealth Mode)"
 echo "- Log file: $ANOYPC_DIR/anoypc.log"
 echo "- Test menu: $ANOYPC_DIR/test.sh"
 echo "- Feature menu: $ANOYPC_DIR/features.sh"
 
-/usr/bin/clear
-echo "  🎉 AnoyPC is on! 🎉"
+#/usr/bin/clear
+echo "  🎉 System is ARMED! 🎉"
 echo "       Have Fun!"
 echo "       tnuno-mo"
 echo
