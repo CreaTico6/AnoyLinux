@@ -6,6 +6,8 @@
 //					March 2026
 //
 
+#define _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -22,6 +24,10 @@
 #include <X11/XKBlib.h>
 #include <X11/cursorfont.h>
 #include <X11/extensions/Xrender.h>
+
+#ifndef ANOY_DIR
+#define ANOY_DIR ".anoypc"
+#endif
 
 /* ==============================================================================
  * GLOBALS & SIGNAL HANDLING
@@ -77,7 +83,7 @@ void log_message(const char* homedir, const char* message) {
 	char timestamp[100];
 	char logpath[512];
 
-	snprintf(logpath, sizeof(logpath), "%s/.anoypc/anoypc.log", homedir);
+	snprintf(logpath, sizeof(logpath), "%s/%s/anoypc.log", homedir, ANOY_DIR);
 
 	logfile = fopen(logpath, "a");
 	if (logfile == NULL) return;
@@ -105,19 +111,19 @@ int is_feature_enabled(const char* homedir, const char* feature_name) {
 	char filepath[512];
 	char legacy_filepath[512];
 
-	snprintf(filepath, sizeof(filepath), "%s/.anoypc/feat_%s.on", homedir, feature_name);
+	snprintf(filepath, sizeof(filepath), "%s/%s/feat_%s.on", homedir, ANOY_DIR, feature_name);
 
 	/* Legacy fallbacks for older marker file names */
 	if (strcmp(feature_name, "ALERT_SCREEN") == 0) {
-		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/.anoypc/feat_REVERSE.on", homedir);
+		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/%s/feat_REVERSE.on", homedir, ANOY_DIR);
 		if (access(legacy_filepath, F_OK) == 0) return 1;
 	}
 	if (strcmp(feature_name, "UPSIDE_DOWN") == 0) {
-		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/.anoypc/feat_SCREEN_ROTATE.on", homedir);
+		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/%s/feat_SCREEN_ROTATE.on", homedir, ANOY_DIR);
 		if (access(legacy_filepath, F_OK) == 0) return 1;
 	}
 	if (strcmp(feature_name, "CAPS_ON") == 0) {
-		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/.anoypc/feat_KEYBOARD_SWAP.on", homedir);
+		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/%s/feat_KEYBOARD_SWAP.on", homedir, ANOY_DIR);
 		if (access(legacy_filepath, F_OK) == 0) return 1;
 	}
 
@@ -881,11 +887,11 @@ int main(int argc, char* argv[]) {
 	const char* homedir = get_home_dir();
 
 	char anoypc_dir[512];
-	snprintf(anoypc_dir, sizeof(anoypc_dir), "%s/.anoypc", homedir);
+	snprintf(anoypc_dir, sizeof(anoypc_dir), "%s/%s", homedir, ANOY_DIR);
 
 	if (access(anoypc_dir, F_OK) != 0) {
-		fprintf(stderr, "ERROR: ~/.anoypc directory does not exist.\n");
-		fprintf(stderr, "Please run './setup.sh' first.\n");
+		fprintf(stderr, "ERROR: ~/%s directory does not exist.\n", ANOY_DIR);
+		fprintf(stderr, "Please run 'make test' or 'make install' first.\n");
 		return 1;
 	}
 
