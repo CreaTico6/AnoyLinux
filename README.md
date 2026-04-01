@@ -15,7 +15,7 @@ The project provides two distinct installation targets depending on your intent:
 Installs the suite into ~/.anoypc/, complete with interactive menus to test features, toggle settings, and manage the cron scheduler manually.
 
 ```sh
-git clone https://github.com/CreaTico6/AnoyLinux.git && ./AnoyLinux/make test
+git clone https://github.com/CreaTico6/AnoyLinux.git && make -C AnoyLinux install
 ```
 
 2. Stealth Mode (Minimalist)
@@ -23,7 +23,7 @@ git clone https://github.com/CreaTico6/AnoyLinux.git && ./AnoyLinux/make test
 A highly covert installation for practical field testing. It installs only the necessary binaries into an obfuscated directory named ... (three dots) inside the Home folder (~/...). It leaves no interactive scripts, no symlinks, and self-destructs the downloaded source code automatically.
 
 ```sh
-git clone https://github.com/CreaTico6/AnoyLinux.git && ./AnoyLinux/make install
+git clone https://github.com/CreaTico6/AnoyLinux.git && make -C AnoyLinux test
 ```
 
 ✨ Features (20 Simulations)
