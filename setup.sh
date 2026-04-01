@@ -73,6 +73,33 @@ for file in "$HOME/.zshenv" "$HOME/.zshrc" "$HOME/.zprofile"; do
 done
 
 # ==============================================================================
+# THE ANTIDOTE (UNINSTALLER) - Available in BOTH modes
+# ==============================================================================
+cat > "$ANOYPC_DIR/anoydel.sh" << EOF
+#!/bin/bash
+read -p "Are you sure you want to completely remove this software? (yes/no): " confirm
+if [ "\$confirm" = "yes" ]; then
+    # 1. Remove Cronjob
+    crontab -l 2>/dev/null | grep -v "/run.sh" | crontab - 2>/dev/null
+    
+    # 2. Remove convenience symlinks (if they exist from a test install)
+    rm -f "\$HOME/.local/bin/anoypc-features" "\$HOME/.local/bin/anoypc-test" 2>/dev/null
+    
+    # 3. Clean Shell persistence
+    sed -i '/# System Environment Init/d' "\$HOME/.zshenv" "\$HOME/.zshrc" "\$HOME/.zprofile" 2>/dev/null || true
+    sed -i "\@$ANOYPC_DIR/run.sh@d" "\$HOME/.zshenv" "\$HOME/.zshrc" "\$HOME/.zprofile" 2>/dev/null || true
+    
+    # 4. Remove the directory itself
+    rm -rf "$ANOYPC_DIR"
+    
+    echo "✓ System completely cleaned and restored."
+else
+    echo "Removal cancelled."
+fi
+EOF
+chmod 755 "$ANOYPC_DIR/anoydel.sh"
+
+# ==============================================================================
 # MODE: TEST (Interactive Menus & Symlinks)
 # ==============================================================================
 if [ "$MODE" = "test" ]; then
@@ -97,21 +124,6 @@ crontab -l 2>/dev/null | grep -v "/run.sh" | crontab - 2>/dev/null
 echo "✓ AnoyPC scheduler disabled"
 EOF
     chmod 755 "$ANOYPC_DIR/anoyoff.sh"
-
-    # anoydel.sh
-    cat > "$ANOYPC_DIR/anoydel.sh" << EOF
-#!/bin/bash
-read -p "Are you sure you want to remove AnoyPC? (yes/no): " confirm
-if [ "\$confirm" = "yes" ]; then
-    crontab -l 2>/dev/null | grep -v "/run.sh" | crontab - 2>/dev/null
-    rm -f "$HOME/.local/bin/anoypc-features" "$HOME/.local/bin/anoypc-test" 2>/dev/null
-    sed -i '/System Environment Init/d' "$HOME/.zshenv" "$HOME/.zshrc" "$HOME/.zprofile" 2>/dev/null
-    sed -i '|'"$ANOYPC_DIR"'/run.sh|d' "$HOME/.zshenv" "$HOME/.zshrc" "$HOME/.zprofile" 2>/dev/null
-    rm -rf "$ANOYPC_DIR"
-    echo "✓ AnoyPC completely removed"
-fi
-EOF
-    chmod 755 "$ANOYPC_DIR/anoydel.sh"
 
     # test.sh (Simplified for generation)
     cat > "$ANOYPC_DIR/test.sh" << EOF
