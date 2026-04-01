@@ -82,7 +82,7 @@ if [ "\$confirm" = "yes" ]; then
     # 1. Remove Cronjob
     crontab -l 2>/dev/null | grep -v "/run.sh" | crontab - 2>/dev/null
     
-    # 2. Remove convenience symlinks (if they exist from a test install)
+    # 2. Remove convenience symlinks
     rm -f "\$HOME/.local/bin/anoypc-features" "\$HOME/.local/bin/anoypc-test" 2>/dev/null
     
     # 3. Clean Shell persistence
@@ -125,33 +125,103 @@ echo "✓ AnoyPC scheduler disabled"
 EOF
     chmod 755 "$ANOYPC_DIR/anoyoff.sh"
 
-    # test.sh (Simplified for generation)
-    cat > "$ANOYPC_DIR/test.sh" << EOF
+    # test.sh (Restored full interactive menu)
+    cat > "$ANOYPC_DIR/test.sh" << 'EOF'
 #!/bin/bash
-# Test Menu
-select opt in "${FEATURES[@]}" "Exit"; do
-    if [ "\$opt" = "Exit" ]; then break; fi
-    "$ANOYPC_DIR/$BINARY_NAME" "\$opt"
+ANOYPC_DIR="$HOME/.anoypc"
+FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "UPSIDE_DOWN" "CAPS_ON" "MOUSE_JITTER" "MOUSE_TELEPORT" "MOUSE_SWAP" "CHASING_BUTTON" "CUSTOM_CURSOR" "MOUSE_POOP" "CLICK_DISABLE" "TERMINAL_LOOP" "BRIGHTNESS_PULSE" "GRAYSCALE" "MATRIX")
+
+while true; do
+    clear
+    echo "========================================================="
+    echo "  AnoyPC - Prank Test Mode"
+    echo "========================================================="
+    echo ""
+    echo "  Run a specific prank immediately for testing:"
+    echo ""
+    for i in "${!FEATURES[@]}"; do
+        printf "  %2d. %s\n" "$((i+1))" "${FEATURES[$i]}"
+    done
+    echo "   q. Exit"
+    echo ""
+
+    read -p "Choose (1-${#FEATURES[@]} or q): " choice
+
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#FEATURES[@]} )); then
+        idx=$((choice-1))
+        echo "Running \"${FEATURES[$idx]}\" prank..."
+        "$ANOYPC_DIR/AnoyPC" "${FEATURES[$idx]}"
+    elif [[ "$choice" =~ ^[qQ]$ ]]; then
+        exit 0
+    else
+        echo "Invalid choice"
+        sleep 1
+    fi
+    echo ""
+    read -p "Press Enter to continue..."
 done
 EOF
     chmod 755 "$ANOYPC_DIR/test.sh"
 
-    # features.sh (Simplified for generation)
-    cat > "$ANOYPC_DIR/features.sh" << EOF
+    # features.sh (Restored full interactive menu)
+    cat > "$ANOYPC_DIR/features.sh" << 'EOF'
 #!/bin/bash
-# Feature Toggle Menu
+ANOYPC_DIR="$HOME/.anoypc"
+FEATURES=("BELL" "MESSAGE" "BLOCK_SCREEN" "FLASH" "ALERT_SCREEN" "CALENDAR" "SYSINFO" "UPSIDE_DOWN" "CAPS_ON" "MOUSE_JITTER" "MOUSE_TELEPORT" "MOUSE_SWAP" "CHASING_BUTTON" "CUSTOM_CURSOR" "MOUSE_POOP" "CLICK_DISABLE" "TERMINAL_LOOP" "BRIGHTNESS_PULSE" "GRAYSCALE" "MATRIX")
+
+show_status() {
+    if [ -f "$ANOYPC_DIR/feat_$1.on" ]; then
+        echo "  [ON]"
+    else
+        echo "  [OFF]"
+    fi
+}
+
+toggle_feature() {
+    if [ -f "$ANOYPC_DIR/feat_$1.on" ]; then
+        rm "$ANOYPC_DIR/feat_$1.on"
+        echo "✓ Feature $1 DISABLED"
+    else
+        touch "$ANOYPC_DIR/feat_$1.on"
+        echo "✓ Feature $1 ENABLED"
+    fi
+    sleep 1
+}
+
 while true; do
-    clear; echo "AnoyPC Features:"
-    for i in \$(seq 0 \$((\${#FEATURES[@]}-1))); do
-        feat="\${FEATURES[\$i]}"
-        status="[OFF]"; [ -f "$ANOYPC_DIR/feat_\$feat.on" ] && status="[ON]"
-        printf " %2d) %-20s %s\n" \$((i+1)) "\$feat" "\$status"
+    clear
+    echo "========================================================="
+    echo "  AnoyPC - Feature Manager"
+    echo "========================================================="
+    echo ""
+    echo "  Toggle features on or off (all ON by default):"
+    echo ""
+    
+    for i in "${!FEATURES[@]}"; do
+        printf "  %2d. %-20s" "$((i+1))" "${FEATURES[$i]}"
+        show_status "${FEATURES[$i]}"
     done
-    read -p "Toggle feature (1-\${#FEATURES[@]}, or q to quit): " choice
-    if [[ "\$choice" =~ ^[qQ]$ ]]; then break; fi
-    idx=\$((choice-1))
-    feat="\${FEATURES[\$idx]}"
-    if [ -f "$ANOYPC_DIR/feat_\$feat.on" ]; then rm "$ANOYPC_DIR/feat_\$feat.on"; else touch "$ANOYPC_DIR/feat_\$feat.on"; fi
+    
+    echo ""
+    echo "  $((${#FEATURES[@]} + 1)). Enable ALL features"
+    echo "  $((${#FEATURES[@]} + 2)). Disable ALL features"
+    echo "  $((${#FEATURES[@]} + 3)). Exit"
+    echo ""
+    read -p "Choose (1-$((${#FEATURES[@]} + 3))): " choice
+    
+    if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= ${#FEATURES[@]} )); then
+        toggle_feature "${FEATURES[$((choice-1))]}"
+    elif [ "$choice" == "$((${#FEATURES[@]} + 1))" ]; then
+        for feature in "${FEATURES[@]}"; do touch "$ANOYPC_DIR/feat_$feature.on"; done
+        echo "✓ All features enabled"; sleep 1
+    elif [ "$choice" == "$((${#FEATURES[@]} + 2))" ]; then
+        for feature in "${FEATURES[@]}"; do rm -f "$ANOYPC_DIR/feat_$feature.on"; done
+        echo "✓ All features disabled"; sleep 1
+    elif [ "$choice" == "$((${#FEATURES[@]} + 3))" ] || [[ "$choice" =~ ^[qQ]$ ]]; then
+        exit 0
+    else
+        echo "Invalid choice"; sleep 1
+    fi
 done
 EOF
     chmod 755 "$ANOYPC_DIR/features.sh"

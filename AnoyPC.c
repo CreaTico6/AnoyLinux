@@ -6,6 +6,10 @@
 //					March 2026
 //
 
+#ifndef ANOY_DIR
+#define ANOY_DIR ".anoypc"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -23,23 +27,20 @@
 #include <X11/cursorfont.h>
 #include <X11/extensions/Xrender.h>
 
-#ifndef ANOY_DIR
-#define ANOY_DIR ".anoypc"
-#endif
-
 /* ==============================================================================
  * GLOBALS & SIGNAL HANDLING
  * ============================================================================*/
 
-/* Flags to track if hardware-altering features are currently active */
+/* Flags to track if hardware/system-altering features are currently active */
 static volatile sig_atomic_t upside_down_active = 0;
 static volatile sig_atomic_t brightness_pulse_active = 0;
 static volatile sig_atomic_t grayscale_active = 0;
+static volatile sig_atomic_t pointer_mapping_altered = 0;
 
 /* Forward declaration for the utility command runner used in signal handlers */
 static void run_command_best_effort(const char* cmd);
 
-/* Restores display state (rotation, brightness, and gamma) upon interruption */
+/* Restores system state (rotation, brightness, gamma, pointer) upon interruption */
 static void restore_display_state(void) {
 	if (upside_down_active) {
 		run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate normal >/dev/null 2>&1; done");
@@ -52,12 +53,16 @@ static void restore_display_state(void) {
 		run_command_best_effort("xcalib -c >/dev/null 2>&1");
 		run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --gamma 1:1:1 >/dev/null 2>&1; done");
 	}
+	if (pointer_mapping_altered) {
+		/* Force X11 pointer mapping back to factory defaults */
+		run_command_best_effort("xmodmap -e \"pointer = default\" >/dev/null 2>&1");
+	}
 }
 
 /* Unified signal handler to ensure safe exits */
 void handle_interrupt(int sig) {
 	restore_display_state();
-	printf("\n>>> Display state restored safely (signal %d) <<<\n\n", sig);
+	printf("\n>>> System state restored safely (signal %d) <<<\n\n", sig);
 	fflush(stdout);
 	_exit(128 + sig);
 }
@@ -107,24 +112,7 @@ const char* get_home_dir(void) {
 /* Checks if a specific feature marker file exists */
 int is_feature_enabled(const char* homedir, const char* feature_name) {
 	char filepath[512];
-	char legacy_filepath[512];
-
 	snprintf(filepath, sizeof(filepath), "%s/%s/feat_%s.on", homedir, ANOY_DIR, feature_name);
-
-	/* Legacy fallbacks for older marker file names */
-	if (strcmp(feature_name, "ALERT_SCREEN") == 0) {
-		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/%s/feat_REVERSE.on", homedir, ANOY_DIR);
-		if (access(legacy_filepath, F_OK) == 0) return 1;
-	}
-	if (strcmp(feature_name, "UPSIDE_DOWN") == 0) {
-		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/%s/feat_SCREEN_ROTATE.on", homedir, ANOY_DIR);
-		if (access(legacy_filepath, F_OK) == 0) return 1;
-	}
-	if (strcmp(feature_name, "CAPS_ON") == 0) {
-		snprintf(legacy_filepath, sizeof(legacy_filepath), "%s/%s/feat_KEYBOARD_SWAP.on", homedir, ANOY_DIR);
-		if (access(legacy_filepath, F_OK) == 0) return 1;
-	}
-
 	return access(filepath, F_OK) == 0;
 }
 
@@ -141,9 +129,14 @@ void feature_mouse_swap(void) {
 	int n = XGetPointerMapping(d, map, 256);
 	
 	if (n >= 3) {
-		unsigned char temp = map[0];
-		map[0] = map[2];
-		map[2] = temp;
+		/* Mark state as altered for the signal handler */
+		pointer_mapping_altered = 1;
+
+		unsigned char orig1 = map[0];
+		unsigned char orig3 = map[2];
+		
+		map[0] = orig3;
+		map[2] = orig1;
 		
 		XSetPointerMapping(d, map, n);
 		XFlush(d);
@@ -151,12 +144,14 @@ void feature_mouse_swap(void) {
 		sleep(10);
 		
 		/* Revert to original mapping */
-		temp = map[0];
-		map[0] = map[2];
-		map[2] = temp;
+		map[0] = orig1;
+		map[2] = orig3;
 		
 		XSetPointerMapping(d, map, n);
 		XFlush(d);
+
+		/* Clear state */
+		pointer_mapping_altered = 0;
 	}
 	XCloseDisplay(d);
 }
@@ -169,6 +164,9 @@ void feature_click_disable(void) {
 	int n = XGetPointerMapping(d, map, 256);
 	
 	if (n >= 1) {
+		/* Mark state as altered for the signal handler */
+		pointer_mapping_altered = 1;
+
 		unsigned char orig1 = map[0];
 		unsigned char orig3 = map[2];
 		
@@ -183,8 +181,12 @@ void feature_click_disable(void) {
 		/* Revert to original mapping */
 		map[0] = orig1;
 		if (n >= 3) map[2] = orig3;
+		
 		XSetPointerMapping(d, map, n);
 		XFlush(d);
+
+		/* Clear state */
+		pointer_mapping_altered = 0;
 	}
 	XCloseDisplay(d);
 }
@@ -201,6 +203,7 @@ void feature_mouse_teleport(void) {
 	int x = rand() % width;
 	int y = rand() % height;
 	
+	/* Single warp action, no global state altered, inherently safe */
 	XWarpPointer(d, None, root, 0, 0, 0, 0, x, y);
 	XFlush(d);
 	XCloseDisplay(d);
@@ -216,6 +219,7 @@ void feature_mouse_jitter(void) {
 	unsigned int mask;
 	Window child;
 
+	/* Loop warping, no global state altered, inherently safe if interrupted */
 	for (int i = 0; i < 60; i++) {
 		if (XQueryPointer(d, root, &root, &child, &x, &y, &win_x, &win_y, &mask)) {
 			int dx = (rand() % 31) - 16;
@@ -243,6 +247,7 @@ void feature_caps_on(void) {
 	}
 	/* Fallback indicator toggle */
 	run_command_best_effort("xset led 1 >/dev/null 2>&1");
+	/* Intentionally left active without cleanup */
 }
 
 
@@ -270,7 +275,7 @@ void feature_custom_cursor(void) {
 	int num_cursors = sizeof(cursors) / sizeof(cursors[0]);
 	Cursor cursor = XCreateFontCursor(d, cursors[rand() % num_cursors]); 
 	
-	/* Force cursor grab */
+	/* Grab pointer. If interrupted, X Server automatically ungrabs on exit. Inherently safe. */
 	XGrabPointer(d, RootWindow(d, s), False, PointerMotionMask | ButtonPressMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync, None, cursor, CurrentTime);
 	XFlush(d);
 	
@@ -542,8 +547,6 @@ void feature_grayscale(void) {
 	if (getenv("DISPLAY") == NULL) return;
 
 	grayscale_active = 1;
-	signal(SIGINT, handle_interrupt);
-	signal(SIGTERM, handle_interrupt);
 
 	int used_xcalib = 0;
 	
@@ -571,12 +574,11 @@ void feature_upside_down(void) {
 	if (getenv("DISPLAY") == NULL) return;
 
 	upside_down_active = 1;
-	signal(SIGINT, handle_interrupt);
-	signal(SIGTERM, handle_interrupt);
 
 	run_command_best_effort("for out in $(xrandr --query | awk '/ connected/{print $1}'); do xrandr --output \"$out\" --rotate inverted >/dev/null 2>&1; done");
 	sleep(42);
 	
+	/* Manually call the revert process to clear state */
 	restore_display_state();
 	upside_down_active = 0;
 }
@@ -585,8 +587,6 @@ void feature_brightness_pulse(void) {
 	if (getenv("DISPLAY") == NULL) return;
 
 	brightness_pulse_active = 1;
-	signal(SIGINT, handle_interrupt);
-	signal(SIGTERM, handle_interrupt);
 
 	char cmd[256];
 	float b;
@@ -603,6 +603,7 @@ void feature_brightness_pulse(void) {
 		}
 	}
 	
+	/* Manually call the revert process to clear state */
 	restore_display_state();
 	brightness_pulse_active = 0;
 }
@@ -881,6 +882,10 @@ void run_random_feature(const char* homedir) {
  * ============================================================================*/
 
 int main(int argc, char* argv[]) {
+	/* Register Signal Handlers immediately to ensure Graceful Exit globally */
+	signal(SIGINT, handle_interrupt);
+	signal(SIGTERM, handle_interrupt);
+
 	srand(time(NULL) ^ getpid());
 	const char* homedir = get_home_dir();
 
