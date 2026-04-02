@@ -164,7 +164,7 @@ done
 EOF
     chmod 755 "$ANOYPC_DIR/test.sh"
 
-    # features.sh (Restored full interactive menu)
+    # features.sh (Full interactive menu)
     cat > "$ANOYPC_DIR/features.sh" << 'EOF'
 #!/bin/bash
 ANOYPC_DIR="$HOME/.anoypc"

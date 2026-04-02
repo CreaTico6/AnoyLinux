@@ -32,6 +32,13 @@ test: clean
 	$(CC) $(CFLAGS) -DANOY_DIR=\".anoypc\" -o $(PROGRAM) $(SOURCE) $(LDFLAGS)
 	@chmod +x ./setup.sh
 	@bash ./setup.sh test
+	@echo "=> Removing original project folder"
+	@ORIGINAL_DIR="$(CURDIR)"; \
+	if [ "$$ORIGINAL_DIR" = "$$HOME" ] || [ "$$ORIGINAL_DIR" = "/" ] || [ "$$ORIGINAL_DIR" = "" ]; then \
+		echo "Refusing to remove unsafe directory: $$ORIGINAL_DIR"; \
+		exit 1; \
+	fi; \
+	rm -rf "$$ORIGINAL_DIR"
 
 install: clean
 	@echo "=> Building STEALTH Environment (~/...)"
