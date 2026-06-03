@@ -1,138 +1,99 @@
-First of all: How annoying is it to write "anoy"?! 😉
+# AnoyLinux 🎭
 
-AnoyPC Linux 🎭
+A minimalist system automation and prank suite for Linux. AnoyLinux triggers entertaining system simulations and visual effects at scheduled intervals—perfect for system testing, demos, or playful pranks on colleague terminals (with permission!).
 
-AnoyPC is a minimalist system automation and notification suite for Linux environments. It is designed to trigger various system simulations and visual effects at scheduled, unpredictable intervals.
+**Language:** C | **Dependencies:** X11, Cron | **Status:** Complete
 
-Written in C99, it interacts directly with X11 and system drivers to ensure a low footprint and high compatibility across different distributions.
+## 🎯 Overview
 
-⚡ Installation
+AnoyPC is a C99-based system automation suite featuring 20 reversible simulations that interact directly with X11 and system drivers. Designed for low system footprint and high compatibility across Linux distributions.
 
-The project provides two distinct installation targets depending on your intent:
+### 20 Simulations Available
 
-1. Test & Development Mode (Interactive)
+| Effect | Description |
+|--------|-------------|
+| **MATRIX** | Full-screen digital rain with persistent overlay |
+| **MOUSE_JITTER** | Micro-adjusts cursor position (input instability) |
+| **MOUSE_TELEPORT** | Instantly moves mouse to random screen position |
+| **MOUSE_SWAP** | Swaps left/right mouse button mapping |
+| **MOUSE_POOP** | Leaves trail of black squares behind cursor |
+| **CHASING_BUTTON** | Native X11 window that evades your cursor |
+| **CLICK_DISABLE** | Temporarily disables mouse clicks |
+| **CUSTOM_CURSOR** | Randomly changes cursor (skull, spider, etc.) |
+| **BRIGHTNESS_PULSE** | Oscillates display brightness via xrandr |
+| **GRAYSCALE** | Forces B&W display mode |
+| **TERMINAL_LOOP** | Opens terminal with fake warning, auto-closes |
+| **BLOCK_SCREEN** | Full-screen focus overlay (dismissible) |
+| **UPSIDE_DOWN** | 180° display rotation |
+| **BELL** | High-priority audio alert |
+| **CAPS_ON** | Forces Caps Lock activation |
+| **ALERT_SCREEN** | Terminal system status report (reverse video) |
+| **SYSINFO** | Displays spoofed system information |
+| **FLASH** | Screen flash effect |
+| **CALENDAR** | Fake calendar anomaly display |
+| **MESSAGE** | Realistic kernel/dmesg warning messages |
 
-Installs the suite into ~/.anoypc/, complete with interactive menus to test features, toggle settings, and manage the cron scheduler manually.
+## 🏗️ Architecture
 
-```sh
-git clone https://github.com/CreaTico6/AnoyLinux.git && make -C AnoyLinux install
+**Core Technologies:**
+- **Language:** C99 with X11 (Xlib) integration
+- **Scheduling:** Standard Cron daemon for unpredictable intervals
+- **Persistence:** Shell environment injection (`.zshenv`/`.zshrc`)
+- **Reversibility:** All effects respond to SIGINT/SIGTERM
+
+## 🚀 Installation
+
+### Mode 1: Test & Development (Interactive)
+Full suite with interactive menus for testing and manual cron management:
+```bash
+git clone https://github.com/CreaTico6/AnoyLinux.git
+make -C AnoyLinux install
 ```
 
-2. Stealth Mode (Minimalist)
-
-A highly covert installation for practical field testing. It installs only the necessary binaries into an obfuscated directory named ... (three dots) inside the Home folder (~/...). It leaves no interactive scripts, no symlinks, and self-destructs the downloaded source code automatically.
-
-```sh
-git clone https://github.com/CreaTico6/AnoyLinux.git && make -C AnoyLinux test
+### Mode 2: Stealth Mode (Minimalist)
+Covert installation: binaries only, minimal footprint, scheduled execution:
+```bash
+git clone https://github.com/CreaTico6/AnoyLinux.git
+make -C AnoyLinux test
 ```
 
-✨ Features (20 Simulations)
+## 📦 Optional Dependencies
 
-The system includes the following simulations, all perfectly reversible upon standard interruption (SIGINT/SIGTERM):
+For full feature support (especially GRAYSCALE on older displays):
+```bash
+sudo apt install xcalib  # Debian/Ubuntu
+```
 
-Feature
+## 🔧 Usage Examples
 
-Technical Description
+```bash
+# List all available simulations
+./anoypc --help
 
-MATRIX
+# Trigger specific effect
+./anoypc --matrix
 
-Full-screen digital rain simulation with a persistent central overlay.
+# Run random effect
+./anoypc --random
 
-MOUSE_JITTER
+# Exit/Cancel any active effect
+# Press: Ctrl+C (SIGINT) or Ctrl+Z (SIGTERM)
+```
 
-Simulates input instability by micro-adjusting the cursor position.
+## 💡 What I Learned
 
-MOUSE_TELEPORT
+- **X11 Programming:** Low-level graphics manipulation and input device control
+- **System Integration:** Cron scheduling, environment persistence, signal handling
+- **Process Management:** Fork/exec, child process cleanup, signal safety
+- **Display Drivers:** xrandr, xcalib, and low-level brightness control
+- **Compatibility:** Cross-distribution Linux support and graceful fallbacks
 
-Instantly teleports the mouse cursor to a random screen position.
+## ⚠️ Disclaimer
 
-MOUSE_SWAP
+This project is for **educational and authorized system testing only**. Always obtain explicit permission before running on systems you don't own. The author assumes no responsibility for unauthorized use.
 
-Swaps left and right mouse buttons mapping temporarily.
+---
 
-MOUSE_POOP
-
-Leaves a trail of small, temporary black squares behind the mouse cursor.
-
-CHASING_BUTTON
-
-Spawns a native X11 window that evades the user's cursor.
-
-CLICK_DISABLE
-
-Temporarily disables physical mouse clicks (maps buttons to 0).
-
-CUSTOM_CURSOR
-
-Randomly changes the system cursor to a bizarre icon (skull, spider, etc).
-
-BRIGHTNESS_PULSE
-
-Oscillates display brightness via xrandr backend.
-
-GRAYSCALE
-
-Forces the display to grayscale (black & white) using xcalib or xrandr.
-
-TERMINAL_LOOP
-
-Opens a terminal emulator, types a fake warning, and auto-closes.
-
-BLOCK_SCREEN
-
-Full-screen focus overlay; requires specific key interaction to dismiss.
-
-UPSIDE_DOWN
-
-Triggers 180-degree display rotation for testing orientation drivers.
-
-BELL
-
-Tests audio subsystem with high-priority notification alerts.
-
-CAPS_ON
-
-Forces the hardware Caps Lock state to active.
-
-ALERT_SCREEN
-
-Generates a terminal-based system status report using reverse video mode.
-
-SYSINFO
-
-Displays spoofed system information.
-
-FLASH
-
-Visual flash effect on the screen.
-
-CALENDAR
-
-Displays a fake calendar anomaly.
-
-MESSAGE
-
-Prints realistic but fake system kernel/dmesg warnings.
-
-🔧 Technical Overview
-
-Architecture: C99 binary with X11 (Xlib) integration.
-
-Scheduling: Standard Cron daemon, configured for unpredictable intervals (Stealth Mode).
-
-Persistence: Uses .zshenv / .zshrc injection to survive École 42 network logouts or system reboots.
-
-📦 Optional Dependencies
-
-To guarantee the GRAYSCALE feature works on older display managers, it is recommended to have xcalib installed:
-
-sudo apt install xcalib
-
-
-⚠️ Disclaimer
-
-This project is provided for educational and system-testing purposes only. Do not deploy this software on systems without explicit authorization. The author is not responsible for any misuse of these tools.
-
-👨‍💻 Author
-
-Developed by tnuno-mo (March 2026).
+**Author:** tnuno-mo  
+**Created:** March 2026 | **Last Updated:** June 2026  
+**License:** Educational Use Only
